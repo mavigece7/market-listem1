@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Market Listem</title>
+<meta name="theme-color" content="#16241C" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<style>
+  :root{
+    --ink:#16241C; --green:#1F7A5C; --coral:#FF6B4A; --purple:#7C5CFC; --muted:#7C8A82; --bg:#F2F4F1;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,sans-serif; color:var(--ink);}
+  .wrap{max-width:420px; margin:0 auto; padding-bottom:120px; min-height:100vh;}
+  .header{display:flex; align-items:center; justify-content:space-between; padding:26px 20px 10px;}
+  .header-left{display:flex; align-items:center; gap:10px;}
+  .logo{width:40px; height:40px; border-radius:16px; background:var(--green); display:flex; align-items:center; justify-content:center; font-size:19px;}
+  h1{font-size:17px; margin:0; font-weight:700;}
+  .subtitle{font-size:11px; color:var(--muted); margin:2px 0 0;}
+  .badge{font-size:11px; padding:4px 10px; border-radius:999px; background:#fff; color:var(--green); font-weight:700; border:1px solid rgba(31,122,92,0.15);}
+  .linkbtn{font-size:10.5px; font-weight:600; color:var(--muted); background:none; border:none; padding:4px 6px; cursor:pointer;}
+  .linkbtn.green{color:var(--green);}
+  .tabs{display:flex; gap:6px; padding:4px; margin:10px 16px 12px; background:#E8EAE5; border-radius:12px;}
+  .tab{flex:1; padding:8px; border:none; border-radius:8px; background:transparent; font-size:12px; font-weight:700; color:var(--muted); cursor:pointer;}
+  .tab.active{background:#fff; color:var(--ink);}
+  .card{margin:0 16px; border-radius:24px; padding:16px; background:#fff; box-shadow:0 8px 24px -8px rgba(22,36,28,0.12);}
+  input[type=text], input[type=search]{width:100%; font-size:14px; padding:10px 12px; border-radius:12px; border:none; outline:none; background:var(--bg); color:var(--ink); font-family:inherit;}
+  input::placeholder{color:#B5BDB4;}
+  .row2{display:flex; gap:8px; margin-top:10px;}
+  .field{flex:1;}
+  .field label{font-size:10px; color:var(--muted); font-weight:600; padding-left:2px; display:block; margin-bottom:2px;}
+  .field input{font-family:'Courier New',monospace; font-size:15px;}
+  .unit-toggle{display:flex; gap:8px; margin-top:10px;}
+  .unit-btn{flex:1; border:none; border-radius:12px; padding:8px; background:var(--bg); color:var(--ink); cursor:pointer; text-align:left;}
+  .unit-btn.active{background:var(--green); color:#fff;}
+  .unit-btn .t1{font-size:12.5px; font-weight:700;}
+  .unit-btn .t2{font-size:10px; opacity:0.75;}
+  .stepper-row{display:flex; align-items:center; justify-content:space-between; background:var(--bg); border-radius:12px; padding:8px 12px; margin-top:10px;}
+  .stepper-label{font-size:11.5px; color:var(--muted); font-weight:600;}
+  .stepper{display:flex; align-items:center; gap:12px;}
+  .stepper button{width:24px; height:24px; border-radius:999px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700;}
+  .stepper .minus{background:#fff; color:var(--ink);}
+  .stepper .plus{background:var(--green); color:#fff;}
+  #kac-tane-val{font-family:'Courier New',monospace; font-weight:700; width:16px; text-align:center;}
+  .preview{border-radius:12px; padding:10px 12px; margin-top:10px; background:rgba(31,122,92,0.06);}
+  .preview-row{display:flex; align-items:center; justify-content:space-between;}
+  .preview-row span:first-child{font-size:11px; color:var(--green); font-weight:600;}
+  .preview-row span:last-child{font-size:13.5px; font-weight:700; color:var(--green); font-family:'Courier New',monospace;}
+  .preview-sub{display:flex; align-items:center; justify-content:space-between; margin-top:4px; padding-top:4px; border-top:1px dashed rgba(31,122,92,0.2);}
+  #submit-btn{width:100%; padding:13px; border-radius:12px; border:none; margin-top:12px; font-size:13.5px; font-weight:700; color:#fff; background:var(--ink); cursor:pointer;}
+  #submit-btn:disabled{background:#D8DCD8; opacity:0.7;}
+  #edit-banner{display:none; align-items:center; justify-content:space-between; margin-bottom:10px; padding:6px 10px; border-radius:12px; background:rgba(255,107,74,0.08);}
+  #edit-banner span{font-size:11.5px; color:var(--coral); font-weight:700;}
+  #edit-banner button{background:none; border:none; color:var(--coral); font-weight:700; font-size:11px; cursor:pointer;}
+  .search-wrap{position:relative; margin:16px 16px 0;}
+  .search-wrap input{padding-left:34px; padding-right:30px; background:#fff; box-shadow:0 4px 14px -6px rgba(22,36,28,0.1);}
+  .search-icon{position:absolute; left:11px; top:50%; transform:translateY(-50%); opacity:0.5; font-size:13px;}
+  .search-clear{position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; opacity:0.5; font-size:13px;}
+  .list-card{margin:12px 16px 0; border-radius:24px; overflow:hidden; background:#fff; box-shadow:0 8px 24px -8px rgba(22,36,28,0.10);}
+  .item-row{display:flex; align-items:flex-start; gap:10px; padding:12px 16px; border-bottom:1px solid #EEF0EC;}
+  .item-row:last-child{border-bottom:none;}
+  .item-row.editing{background:rgba(255,107,74,0.05);}
+  .item-row.baskasi{background:rgba(124,92,252,0.07);}
+  .person-btn{border:none; background:none; padding:0; cursor:pointer; flex-shrink:0; margin-top:2px;}
+  .person-circle{width:24px; height:24px; border-radius:999px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted);}
+  .person-circle.active{background:var(--purple); color:#fff; font-weight:800; font-size:9px;}
+  .item-info{flex:1; min-width:0; padding-top:2px; cursor:pointer;}
+  .item-name{font-size:12px; font-weight:700; line-height:1.4; word-break:break-word;}
+  .item-name.baskasi{color:var(--purple);}
+  .item-tag{font-size:9px; padding:2px 6px; border-radius:999px; font-weight:700; margin-left:4px; display:inline-block;}
+  .tag-kacTane{background:rgba(255,107,74,0.12); color:var(--coral);}
+  .tag-baskasi{background:rgba(124,92,252,0.12); color:var(--purple);}
+  .item-sub{font-size:10px; color:var(--muted); margin-top:2px;}
+  .kim-input{font-size:10px; margin-top:5px; padding:5px 8px; border-radius:8px; border:none; outline:none; width:100%; background:rgba(124,92,252,0.06); color:var(--purple); font-family:inherit;}
+  .item-price{font-size:13px; font-weight:700; font-family:'Courier New',monospace; flex-shrink:0; margin-top:2px;}
+  .item-price.baskasi{color:var(--purple);}
+  .item-actions{display:flex; flex-direction:column; gap:6px; flex-shrink:0; margin-top:2px;}
+  .item-actions button, .reorder-actions button{background:none; border:none; cursor:pointer; padding:1px; opacity:0.45; font-size:12px;}
+  .reorder-actions{display:flex; flex-direction:column; flex-shrink:0;}
+  .reorder-actions button:disabled{opacity:0.08; cursor:default;}
+  .empty-state{margin:24px 16px 0; text-align:center; padding:32px 16px; color:var(--muted); font-size:12.5px;}
+  .baska-toggle{margin:10px 16px 0; width:calc(100% - 32px); display:flex; align-items:center; justify-content:space-between; border-radius:12px; padding:10px 14px; background:rgba(124,92,252,0.08); border:1px solid rgba(124,92,252,0.2); cursor:pointer;}
+  .baska-toggle span{color:var(--purple); font-weight:700; font-size:11.5px;}
+  .baska-panel{margin:8px 16px 0; border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 8px 24px -8px rgba(22,36,28,0.10);}
+  .baska-group-head{display:flex; align-items:center; justify-content:space-between; padding:10px 16px 4px;}
+  .baska-group-head span{font-weight:800; color:var(--purple); font-size:11.5px;}
+  .baska-item{display:flex; align-items:center; justify-content:space-between; padding:4px 16px;}
+  .baska-item span:first-child{font-size:11.5px;}
+  .baska-item span:last-child{font-size:11px; color:var(--muted); font-family:'Courier New',monospace;}
+  .save-card{margin:12px 16px 0;}
+  .save-btn{width:100%; padding:11px; border-radius:12px; background:#fff; color:var(--green); border:1px solid rgba(31,122,92,0.2); font-size:12px; font-weight:700; cursor:pointer;}
+  .save-panel{border-radius:16px; padding:12px; background:#fff; border:1px solid rgba(31,122,92,0.2);}
+  .save-panel label{font-size:10.5px; color:var(--muted); font-weight:600;}
+  .save-panel input{margin-top:4px;}
+  .save-panel .actions{display:flex; gap:8px; margin-top:8px;}
+  .save-panel .actions button{flex:1; padding:9px; border:none; border-radius:10px; font-size:11.5px; font-weight:700; cursor:pointer;}
+  .btn-cancel{background:var(--bg); color:var(--muted);}
+  .btn-confirm{background:var(--green); color:#fff;}
+  .sticky{position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center;}
+  .sticky-inner{width:100%; max-width:420px; padding:16px 20px; background:var(--ink);}
+  .sticky-baska{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.12);}
+  .sticky-baska-label{font-size:11px; color:rgba(255,255,255,0.7); font-weight:600;}
+  .sticky-baska-val{font-size:13px; font-weight:700; color:var(--purple); font-family:'Courier New',monospace;}
+  .sticky-main{display:flex; align-items:center; justify-content:space-between;}
+  .sticky-total-label{font-size:10px; color:rgba(255,255,255,0.5); font-weight:600; letter-spacing:0.02em;}
+  .sticky-total-val{font-size:24px; font-weight:800; color:#fff; font-family:'Courier New',monospace;}
+  .sticky-self{font-size:10px; color:rgba(255,255,255,0.45); margin-top:2px;}
+  .sticky-icon{width:36px; height:36px; border-radius:999px; background:var(--coral); display:flex; align-items:center; justify-content:center; font-size:15px;}
+  .datalist-hint{font-size:9.5px; color:var(--muted); margin-top:4px; padding-left:2px;}
+  .compare-card{margin:0 16px 16px;}
+  .compare-title{font-size:12.5px; font-weight:800; margin:0 0 8px 2px;}
+  .compare-title.purple{color:var(--purple);}
+  .compare-list{border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 8px 24px -8px rgba(22,36,28,0.1);}
+  .compare-row{display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid #EEF0EC;}
+  .compare-row:last-child{border-bottom:none;}
+  .compare-name{font-size:12px; font-weight:700;}
+  .compare-sub{font-size:10px; color:var(--muted); margin-top:1px;}
+  .compare-delta{font-size:12px; font-weight:800; font-family:'Courier New',monospace;}
+  .person-row{display:flex; align-items:center; justify-content:space-between; padding:9px 16px; border-bottom:1px solid #EEF0EC;}
+  .person-row:last-child{border-bottom:none;}
+  .person-left{display:flex; align-items:center; gap:8px; min-width:0;}
+  .person-dot{width:22px; height:22px; border-radius:999px; background:rgba(124,92,252,0.1); display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;}
+  .person-name{font-size:12px; font-weight:700;}
+  .person-sub{font-size:9.5px; color:var(--muted);}
+  .person-total{font-size:13px; font-weight:800; color:var(--purple); font-family:'Courier New',monospace;}
+  .archive-list{border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 8px 24px -8px rgba(22,36,28,0.1); margin-bottom:20px;}
+  .archive-row{border-bottom:1px solid #EEF0EC;}
+  .archive-row:last-child{border-bottom:none;}
+  .archive-head{width:100%; display:flex; align-items:center; justify-content:space-between; padding:12px 16px;}
+  .archive-name-wrap{flex:1; min-width:0; text-align:left; background:none; border:none; cursor:pointer; font-family:inherit;}
+  .archive-name{font-size:12.5px; font-weight:700;}
+  .archive-count{font-size:10px; color:var(--muted); margin-top:1px;}
+  .archive-total{font-size:13px; font-weight:800; font-family:'Courier New',monospace;}
+  .archive-detail{padding:0 16px 12px;}
+  .archive-item{display:flex; align-items:center; justify-content:space-between; padding:5px 0; font-size:11px; border-top:1px solid #F3F4F1;}
+  .archive-item .name{display:flex; align-items:center; gap:1.5px; flex-wrap:wrap;}
+  .archive-item span:last-child{color:var(--muted); font-family:'Courier New',monospace; font-size:10.5px;}
+  .archive-del{font-size:10px; color:#D14D3C; font-weight:600; background:none; border:none; padding:0; margin-top:6px; cursor:pointer;}
+  .archive-name-input{font-size:12.5px; font-weight:700; width:100%; padding:5px 8px; border-radius:8px; border:none; outline:none; background:var(--bg);}
+  .arsiv-edit-box{border-radius:12px; padding:10px; margin:4px 0; background:rgba(255,107,74,0.05);}
+  .arsiv-edit-box input, .arsiv-edit-box select{font-size:11px; padding:6px 8px; border-radius:8px; border:none; outline:none; background:#fff;}
+  .arsiv-edit-row{display:flex; align-items:center; gap:6px; margin-top:6px;}
+  .arsiv-edit-actions{display:flex; gap:8px; margin-top:8px;}
+  .arsiv-edit-actions button{flex:1; padding:7px; border:none; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;}
+  .scan-btn{margin:0 16px 12px; width:calc(100% - 32px); display:flex; align-items:center; justify-content:center; gap:6px; padding:12px; border-radius:16px; border:none; background:var(--purple); color:#fff; font-weight:700; font-size:13px; cursor:pointer;}
+  .scan-panel{margin:0 16px 12px; border-radius:16px; padding:14px; background:#fff; box-shadow:0 8px 24px -8px rgba(22,36,28,0.12);}
+  .scan-howto{border-radius:12px; padding:10px; margin-bottom:10px; background:rgba(124,92,252,0.05); font-size:11.5px;}
+  .scan-howto ol{margin:6px 0 0; padding-left:18px;}
+  .scan-howto li{margin-bottom:3px;}
+  .scan-item{border-radius:10px; padding:8px; margin-bottom:6px; background:var(--bg);}
+  .scan-item.included{background:rgba(124,92,252,0.06);}
+  .scan-item-top{display:flex; align-items:center; gap:6px; margin-bottom:6px;}
+  .scan-item-top input[type=text]{flex:1; font-size:12px; font-weight:700; padding:5px 7px;}
+  .scan-item-row{display:flex; align-items:center; gap:6px; padding-left:24px;}
+  .scan-item-row select, .scan-item-row input{font-size:10px; padding:5px 6px; border-radius:6px; border:none; outline:none; background:#fff;}
+  .backup-card{margin:0 16px 20px; border-radius:16px; padding:12px; background:#fff; border:1px solid rgba(31,122,92,0.2);}
+  .backup-card textarea{width:100%; font-size:9px; padding:8px; border-radius:10px; border:none; outline:none; background:var(--bg); font-family:'Courier New',monospace; resize:none;}
+  .backup-card .msg{font-size:9.5px; color:var(--green); font-weight:600; margin-top:4px;}
+  .loading{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============ VERİ / DEPOLAMA (localStorage — kalıcı ve güvenilir) ============ */
+const K_URUNLER = "ml_urunler";
+const K_GECMISI = "ml_urun_gecmisi";
+const K_ARSIV = "ml_gecmis_alisverisler";
+const K_KAMPANYA = "ml_kart_kampanyalari";
+const K_KURALTIP = "ml_kural_tipleri";
+
+const YONTEM_SECENEKLERI = [
+  { yontem: "gunluk_toplam", ad: "Gün İçi Toplama Dayalı", aciklama: "Aynı gündeki alışverişler toplanır, o günün toplamı eşiği kaç kez geçtiyse o kadar kez ödül verir" },
+  { yontem: "her_cekim", ad: "Her Çekime Dayalı", aciklama: "Her alışveriş kendi başına ayrı değerlendirilir, eşiği geçen her alışveriş ayrı ödül verir" },
+  { yontem: "gunde_ilk", ad: "Günde Bir Kez (İlk Alışverişte)", aciklama: "Sadece günün ilk alışverişi eşiği geçiyorsa, günde tek seferlik sabit ödül verir" },
+];
+
+const VARSAYILAN_KURAL_TIPLERI = [
+  { id: "gunluk_toplam", ad: "Gün İçinde Toplam", yontem: "gunluk_toplam" },
+  { id: "her_cekim", ad: "Her Çekimde", yontem: "her_cekim" },
+  { id: "gunde_ilk", ad: "Günde Bir (İlk Alışveriş)", yontem: "gunde_ilk" },
+];
+
+function yukle(anahtar, varsayilan) {
+  try { const v = localStorage.getItem(anahtar); return v ? JSON.parse(v) : varsayilan; }
+  catch (e) { return varsayilan; }
+}
+function kaydet(anahtar, deger) {
+  try { localStorage.setItem(anahtar, JSON.stringify(deger)); } catch (e) {}
+}
+
+let S = {
+  urunler: yukle(K_URUNLER, []),
+  urunGecmisi: yukle(K_GECMISI, []),
+  marketAdi: "",
+  arsiv: yukle(K_ARSIV, []),
+  kartKampanyalari: yukle(K_KAMPANYA, []),
+  kuralTipleri: (() => { const y = yukle(K_KURALTIP, null); return (Array.isArray(y) && y.length > 0) ? y : VARSAYILAN_KURAL_TIPLERI; })(),
+  ktAcik: false,
+  ktAd: "",
+  ktYontem: "her_cekim",
+  ktDuzenleId: null,
+  kkDuzenleId: null,
+  kkHesapTutari: "",
+  kkKategori: "Tümü",
+  karsilastirmaArama: "",
+  aktifKategori: "Market",
+  editingId: null,
+  arama: "",
+  mod: "liste",
+  birim: "gram",
+  kacTane: 1,
+  girisModu: "toplam", // "toplam" | "kgFiyati" (sadece gram modunda)
+  kgFiyati: "",
+  baskaAcik: false,
+  kaydetPaneliAcik: false,
+  acikArsiv: null,
+  acikKarsilastirma: null,
+  arsivSiralamaTuru: "tarih", // "tarih" | "az"
+  icerikSiralamaAZ: {},
+  arsivIsimDuzenle: null,
+  arsivDraft: null, // {arsivId, urunId, ad, birim, fiyat, miktar, kacTane, baskasiAdet, kimIcin}
+  yedekAcik: false,
+  taramaAcik: false,
+  taramaHata: "",
+  taramaSonuclari: [],
+};
+
+function urunKaydet(){ kaydet(K_URUNLER, S.urunler); }
+function gecmisKaydet(){ kaydet(K_GECMISI, S.urunGecmisi); }
+function arsivKaydet(){ kaydet(K_ARSIV, S.arsiv); }
+function kampanyaKaydet(){ kaydet(K_KAMPANYA, S.kartKampanyalari); }
+function kuralTipiKaydet(){ kaydet(K_KURALTIP, S.kuralTipleri); }
+function kuralTipiBul(id) { return S.kuralTipleri.find(kt => kt.id === id) || { id, ad: "Bilinmeyen tip", yontem: "her_cekim" }; }
+
+/* ============ YARDIMCI ============ */
+const paraFmt = (n) => (n || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const TR_AYLAR = {
+  "ocak": 0, "şubat": 1, "subat": 1, "mart": 2, "nisan": 3, "mayıs": 4, "mayis": 4,
+  "haziran": 5, "temmuz": 6, "ağustos": 7, "agustos": 7, "eylül": 8, "eylul": 8,
+  "ekim": 9, "kasım": 10, "kasim": 10, "aralık": 11, "aralik": 11,
+};
+function isimdenTarihCikar(isim) {
+  if (!isim) return null;
+  const m = isim.match(/(\d{1,2})\s+([a-zçğıöşü]+)\s+(\d{4})/i);
+  if (!m) return null;
+  const gun = parseInt(m[1], 10);
+  const ay = TR_AYLAR[m[2].toLocaleLowerCase("tr")];
+  const yil = parseInt(m[3], 10);
+  if (ay === undefined || !gun || !yil) return null;
+  return new Date(yil, ay, gun);
+}
+function arsivSiraTarihi(a) {
+  return isimdenTarihCikar(a.isim) || new Date(a.tarih);
+}
+const miktarFmt = (n) => (n || 0).toLocaleString("tr-TR", { maximumFractionDigits: 0 });
+const esc = (s) => (s || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const bugununAdi = () => new Date().toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
+
+function birimFiyatiHesapla(fiyat, miktar, birim) {
+  if (!(fiyat > 0) || !(miktar > 0)) return null;
+  return birim === "gram" ? (fiyat / miktar) * 1000 : fiyat / miktar;
+}
+
+function tumUrunKayitlari() {
+  const kayitlar = {};
+  const listeler = [...S.arsiv.map(a => ({ tarih: a.tarih, urunler: a.urunler })), { tarih: new Date().toISOString(), urunler: S.urunler }];
+  listeler.forEach(liste => {
+    liste.urunler.forEach(u => {
+      if (!u.ad || u.ad === "Ürün") return;
+      const key = (u.ad || "").trim().toLocaleLowerCase("tr");
+      const mevcut = kayitlar[key];
+      if (!mevcut || new Date(liste.tarih) >= new Date(mevcut.tarih)) {
+        kayitlar[key] = { ad: u.ad, birim: u.birim, fiyat: u.fiyat, miktar: u.miktar, birimFiyati: u.birimFiyati, marketAdi: u.marketAdi || "", tarih: liste.tarih };
+      }
+    });
+  });
+  return kayitlar;
+}
+
+function tumMarketAdlari() {
+  const set = new Set();
+  S.urunler.forEach(u => { if (u.marketAdi) set.add(u.marketAdi); });
+  S.arsiv.forEach(a => a.urunler.forEach(u => { if (u.marketAdi) set.add(u.marketAdi); }));
+  return Array.from(set).sort((a,b) => a.localeCompare(b, "tr"));
+}
+
+function tumKategoriler() {
+  const set = new Set(["Market", "Restoran", "Akaryakıt"]);
+  S.arsiv.forEach(a => { if (a.kategori) set.add(a.kategori); });
+  return Array.from(set).sort((a,b) => a.localeCompare(b, "tr"));
+}
+
+function urunFiyatGruplari() {
+  const gruplar = {};
+  const sirali = [...S.arsiv].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
+  sirali.forEach(a => {
+    a.urunler.forEach(u => {
+      if (!u.birimFiyati) return;
+      const key = (u.ad || "").trim().toLocaleLowerCase("tr");
+      if (!gruplar[key]) gruplar[key] = [];
+      gruplar[key].push({ ad: u.ad, tarih: a.tarih, alisverisIsim: a.isim, marketAdi: u.marketAdi || "", birimFiyati: u.birimFiyati, birim: u.birim, arsivId: a.id, urunId: u.id });
+    });
+  });
+  return gruplar;
+}
+
+function fiyatKarsilastirma() {
+  const gruplar = urunFiyatGruplari();
+  const sonuc = [];
+  Object.values(gruplar).forEach(kayitlar => {
+    if (kayitlar.length < 2) return;
+    const onceki = kayitlar[kayitlar.length-2];
+    const sonraki = kayitlar[kayitlar.length-1];
+    if (onceki.birim !== sonraki.birim) return;
+    const fark = sonraki.birimFiyati - onceki.birimFiyati;
+    const yuzde = onceki.birimFiyati > 0 ? (fark/onceki.birimFiyati)*100 : 0;
+    sonuc.push({ ad: sonraki.ad, birim: sonraki.birim, onceki, sonraki, fark, yuzde, tumKayitlar: kayitlar });
+  });
+  sonuc.sort((a,b)=>Math.abs(b.yuzde)-Math.abs(a.yuzde));
+  return sonuc;
+}
+
+function karsilastirmaAramaSonucu(arama) {
+  const q = (arama || "").trim().toLocaleLowerCase("tr");
+  if (!q) return [];
+  const gruplar = urunFiyatGruplari();
+  return Object.entries(gruplar)
+    .filter(([key]) => key.includes(q))
+    .map(([, kayitlar]) => ({
+      ad: kayitlar[kayitlar.length - 1].ad,
+      kayitlar: [...kayitlar].sort((a, b) => new Date(b.tarih) - new Date(a.tarih)),
+    }))
+    .sort((a, b) => a.ad.localeCompare(b.ad, "tr"));
+}
+
+/* ============ KART PUANI HESAPLAMA ============ */
+
+function ayIslemleri() {
+  const simdi = new Date();
+  const ayBasi = new Date(simdi.getFullYear(), simdi.getMonth(), 1);
+  const islemler = [];
+  S.arsiv.forEach(a => {
+    const t = new Date(a.tarih);
+    if (t >= ayBasi) islemler.push({ tarih: t, tutar: a.urunler.reduce((s,u)=>s+u.satirToplami,0), kategori: a.kategori || "Market" });
+  });
+  if (S.urunler.length > 0) {
+    islemler.push({ tarih: simdi, tutar: S.urunler.reduce((s,u)=>s+u.satirToplami,0), kategori: S.aktifKategori || "Market" });
+  }
+  return islemler.sort((a,b) => a.tarih - b.tarih);
+}
+
+function hesaplaKampanyaPuani(k, islemlerHam) {
+  const kKategori = k.kategori || "Tümü";
+  const islemler = kKategori === "Tümü" ? islemlerHam : islemlerHam.filter(isl => isl.kategori === kKategori);
+  if (islemler.length === 0) return { kazanilan: 0, tavanaTakildi: false };
+  const yontem = kuralTipiBul(k.kural).yontem;
+  let hamPuan = 0;
+  if (yontem === "her_cekim") {
+    islemler.forEach(isl => { hamPuan += Math.floor(isl.tutar / k.esik) * k.puan; });
+  } else {
+    const gunler = {};
+    islemler.forEach(isl => {
+      const key = isl.tarih.toISOString().slice(0,10);
+      if (!gunler[key]) gunler[key] = [];
+      gunler[key].push(isl);
+    });
+    if (yontem === "gunluk_toplam") {
+      Object.values(gunler).forEach(gi => {
+        const gunToplami = gi.reduce((s,i)=>s+i.tutar,0);
+        hamPuan += Math.floor(gunToplami / k.esik) * k.puan;
+      });
+    } else if (yontem === "gunde_ilk") {
+      Object.values(gunler).forEach(gi => {
+        const ilk = gi.slice().sort((a,b)=>a.tarih-b.tarih)[0];
+        if (ilk.tutar >= k.esik) hamPuan += k.puan;
+      });
+    }
+  }
+  const kazanilan = k.tavan ? Math.min(hamPuan, k.tavan) : hamPuan;
+  const tavanaTakildi = !!(k.tavan && hamPuan > k.tavan);
+  return { kazanilan, tavanaTakildi };
+}
+
+function kkSonuclar() {
+  const islemler = ayIslemleri();
+  return S.kartKampanyalari
+    .map(k => ({ ...k, ...hesaplaKampanyaPuani(k, islemler) }))
+    .sort((a,b) => b.kazanilan - a.kazanilan);
+}
+
+function kkHesaplamaTutari() {
+  const manuel = parseFloat((S.kkHesapTutari || "").replace(",", "."));
+  if (manuel > 0) return manuel;
+  return S.urunler.reduce((s,u)=>s+u.satirToplami,0);
+}
+
+function kkSimulasyon() {
+  const tutar = kkHesaplamaTutari();
+  return S.kartKampanyalari.map(k => {
+    const yontem = kuralTipiBul(k.kural).yontem;
+    let kazanilan = yontem === "gunde_ilk" ? (tutar >= k.esik ? k.puan : 0) : Math.floor(tutar / k.esik) * k.puan;
+    if (k.tavan) kazanilan = Math.min(kazanilan, k.tavan);
+    return { ...k, kazanilan };
+  }).sort((a,b) => b.kazanilan - a.kazanilan);
+}
+
+/* ============ ANA RENDER ============ */
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="wrap">
+      <div class="header">
+        <div class="header-left">
+          <div class="logo">🧺</div>
+          <div>
+            <h1>Market Listem</h1>
+            <p class="subtitle">${new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"long"})}</p>
+          </div>
+        </div>
+        <div id="header-right" style="display:flex; align-items:center; gap:8px;"></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab ${S.mod==="liste"?"active":""}" data-action="mod" data-mod="liste">Liste</button>
+        <button class="tab ${S.mod==="gecmis"?"active":""}" data-action="mod" data-mod="gecmis">📜 Geçmiş ${S.arsiv.length>0?`(${S.arsiv.length})`:""}</button>
+        <button class="tab ${S.mod==="puan"?"active":""}" data-action="mod" data-mod="puan">💳 Puan</button>
+      </div>
+
+      <div id="liste-panel" style="display:${S.mod==="liste"?"block":"none"}">
+        <button class="scan-btn" data-action="tarama-toggle">📷 Fiş Fotoğrafından Ekle</button>
+        <div id="scan-panel-wrap"></div>
+
+        <div class="card">
+          <div id="edit-banner">
+            <span>Kayıt düzenleniyor</span>
+            <button data-action="duzenle-iptal">✕ Vazgeç</button>
+          </div>
+          <div style="position:relative;">
+            <input type="text" id="ad-input" list="urun-datalist" placeholder="Ürün adı (opsiyonel)" autocomplete="off" />
+            <datalist id="urun-datalist"></datalist>
+          </div>
+          <div class="datalist-hint">Yazarken önceki alışverişlerinden öneriler çıkar</div>
+
+          <input type="text" id="market-input" list="market-datalist" placeholder="Market/mağaza adı (opsiyonel — örn. Gimat Gross)" autocomplete="off" style="font-size:12.5px; padding:7px 12px; color:var(--muted); margin-top:6px;" value="${esc(S.marketAdi||"")}" />
+          <datalist id="market-datalist">
+            ${tumMarketAdlari().map(m => `<option value="${esc(m)}"></option>`).join("")}
+          </datalist>
+
+          <div class="unit-toggle">
+            <button class="unit-btn ${S.birim==="gram"?"active":""}" data-action="birim" data-birim="gram">
+              <div class="t1">Gram ile</div><div class="t2">tavuk, meyve...</div>
+            </button>
+            <button class="unit-btn ${S.birim==="adet"?"active":""}" data-action="birim" data-birim="adet">
+              <div class="t1">Adet ile</div><div class="t2">koli, paket...</div>
+            </button>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button data-action="giris-modu" data-modu="toplam" style="flex:1; border-radius:8px; padding:6px; font-size:10.5px; font-weight:700; cursor:pointer; background:${S.girisModu==="toplam"?"rgba(31,122,92,0.1)":"var(--bg)"}; color:${S.girisModu==="toplam"?"var(--green)":"var(--muted)"}; border:1px solid ${S.girisModu==="toplam"?"rgba(31,122,92,0.35)":"transparent"};">Toplam fiyatı biliyorum</button>
+            <button data-action="giris-modu" data-modu="birimFiyati" style="flex:1; border-radius:8px; padding:6px; font-size:10.5px; font-weight:700; cursor:pointer; background:${S.girisModu==="birimFiyati"?"rgba(31,122,92,0.1)":"var(--bg)"}; color:${S.girisModu==="birimFiyati"?"var(--green)":"var(--muted)"}; border:1px solid ${S.girisModu==="birimFiyati"?"rgba(31,122,92,0.35)":"transparent"};">${S.birim==="gram"?"Kg fiyatını biliyorum":"Adet fiyatını biliyorum"}</button>
+          </div>
+
+          <div class="row2">
+            <div class="field" id="fiyat-alani">
+              ${S.birim==="gram" && S.girisModu==="birimFiyati" ? `
+                <label>KİLOGRAM FİYATI (₺/kg)</label>
+                <input type="text" inputmode="decimal" id="kg-fiyat-input" placeholder="0,00" value="${esc(S.kgFiyati||"")}" />
+              ` : S.birim==="adet" && S.girisModu==="toplam" ? `
+                <label>TOPLAM FİYAT (₺)</label>
+                <input type="text" inputmode="decimal" id="fiyat-input" placeholder="hepsi için ödediğin toplam" />
+              ` : `
+                <label>${S.birim==="adet"?"ADET FİYATI (₺)":"FİYAT (₺)"}</label>
+                <input type="text" inputmode="decimal" id="fiyat-input" placeholder="0,00" />
+              `}
+            </div>
+            <div class="field">
+              <label id="miktar-label">${S.birim==="gram"?"GRAMAJ (g)":"KOLİDEKİ ADET"}</label>
+              <input type="text" inputmode="decimal" id="miktar-input" placeholder="${S.birim==="gram"?"0":"6, 24..."}" />
+            </div>
+          </div>
+
+          ${S.birim==="gram" && S.girisModu==="birimFiyati" ? `
+          <div class="preview" id="kg-hesap-onizleme" style="margin-top:0; margin-bottom:10px;"></div>` : ""}
+          ${S.birim==="adet" && S.girisModu==="toplam" ? `
+          <div class="preview" id="kg-hesap-onizleme" style="margin-top:0; margin-bottom:10px;"></div>` : ""}
+
+          <div class="stepper-row" id="kactane-kutu" style="${S.kacTane===0?'background:rgba(255,107,74,0.13);':''}">
+            <div>
+              <span class="stepper-label" style="${S.kacTane===0?'color:var(--coral);':''}">Kaç tane aldın?</span>
+              ${S.kacTane===0?'<div class="kactane-not" style="font-size:9.5px; color:var(--coral); margin-top:1px;">Almadın — sadece fiyat takibi, toplamı etkilemez</div>':''}
+            </div>
+            <div class="stepper">
+              <button class="minus" data-action="kactane-eksi">−</button>
+              <span id="kac-tane-val" style="${S.kacTane===0?'color:var(--coral);':''}">${S.kacTane}</span>
+              <button class="plus" data-action="kactane-arti">+</button>
+            </div>
+          </div>
+
+          <div class="preview" id="preview-box"></div>
+
+          <button id="submit-btn" data-action="kaydet-urun" disabled>+ Listeye ekle</button>
+        </div>
+
+        ${S.urunler.length>0?`
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="search" id="arama-input" placeholder="Listede ara..." value="${esc(S.arama)}" />
+          ${S.arama?`<button class="search-clear" data-action="arama-temizle">✕</button>`:""}
+        </div>`:""}
+
+        <div id="baska-toggle-wrap"></div>
+        <div id="baska-panel-wrap"></div>
+
+        <div id="urun-listesi"></div>
+
+        <div class="save-card" id="save-card-wrap"></div>
+      </div>
+
+      <div id="gecmis-panel" style="display:${S.mod==="gecmis"?"block":"none"}"></div>
+      <div id="puan-panel" style="display:${S.mod==="puan"?"block":"none"}"></div>
+
+      <div class="backup-card">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:10.5px; font-weight:700;">Yedek al / geri yükle</span>
+          <button class="linkbtn green" data-action="yedek-toggle">${S.yedekAcik?"gizle":"göster"}</button>
+        </div>
+        ${S.yedekAcik?`
+          <div style="margin-top:8px;">
+            <p style="font-size:9.5px; color:var(--muted); margin:0 0 6px;">Listeni bir dosya olarak indir, başka bir cihazda o dosyayı seçerek geri yükle.</p>
+            <button class="save-btn" data-action="yedek-dosya-indir">⬇ Dosya Olarak İndir (.json)</button>
+            <div style="margin-top:8px;">
+              <input type="file" id="yedek-dosya-input" accept="application/json,.json,.txt" style="display:none;" />
+              <button class="save-btn" style="background:var(--coral); color:#fff; border:none;" data-action="yedek-dosya-sec">⬆ Dosyadan Geri Yükle</button>
+            </div>
+          </div>
+          <details style="margin-top:10px;">
+            <summary style="font-size:9.5px; color:var(--muted); cursor:pointer;">Metin ile kopyala/yapıştır (alternatif)</summary>
+            <div style="margin-top:8px;">
+              <textarea id="yedek-metin" readonly style="height:60px;" onclick="this.select()"></textarea>
+              <button class="save-btn" style="margin-top:6px;" data-action="yedek-kopyala">Panoya Kopyala</button>
+            </div>
+            <div style="margin-top:10px;">
+              <textarea id="iceaktar-metin" placeholder="Yedek metnini buraya yapıştır" style="height:50px;"></textarea>
+              <button class="save-btn" style="margin-top:6px; background:var(--coral); color:#fff; border:none;" data-action="yedek-iceaktar">Metinden İçe Aktar</button>
+            </div>
+          </details>
+          <div class="msg" id="yedek-mesaj"></div>
+        `:""}
+      </div>
+    </div>
+
+    <div class="sticky" id="sticky-wrap"></div>
+  `;
+
+  bindForm();
+  renderHeaderRight();
+  renderPreview();
+  renderList();
+  renderBaska();
+  renderSaveCard();
+  renderSticky();
+  renderScanPanel();
+  if (S.mod === "gecmis") renderGecmis();
+  if (S.mod === "puan") renderPuan();
+  if (S.yedekAcik) {
+    document.getElementById("yedek-metin").value = JSON.stringify({ urunler: S.urunler, urunGecmisi: S.urunGecmisi, arsiv: S.arsiv, kartKampanyalari: S.kartKampanyalari, kuralTipleri: S.kuralTipleri });
+  }
+  renderDatalist();
+  if (S.editingId) document.getElementById("edit-banner").style.display = "flex";
+}
+
+/* ============ HEADER ============ */
+function renderHeaderRight() {
+  const el = document.getElementById("header-right");
+  if (S.urunler.length === 0) { el.innerHTML = ""; return; }
+  const toplamAdet = S.urunler.reduce((a,u)=>a+u.kacTane,0);
+  el.innerHTML = `
+    <div class="badge">${toplamAdet} ürün</div>
+    <button class="linkbtn green" data-action="siralaAZ">A-Z</button>
+    <button class="linkbtn" data-action="temizle">Temizle</button>
+  `;
+}
+
+/* ============ FORM ============ */
+function bindForm() {
+  const adInput = document.getElementById("ad-input");
+  const miktarInput = document.getElementById("miktar-input");
+  const fiyatInput = document.getElementById("fiyat-input");
+  const kgFiyatInput = document.getElementById("kg-fiyat-input");
+
+  adInput.addEventListener("input", () => {
+    const kayit = tumUrunKayitlari()[adInput.value.trim().toLocaleLowerCase("tr")];
+    if (kayit && adInput.value.trim().toLocaleLowerCase("tr") === kayit.ad.toLocaleLowerCase("tr")) {
+      const adDeger = adInput.value;
+      S.birim = kayit.birim;
+      S.girisModu = "toplam";
+      S.kgFiyati = "";
+      render();
+      document.getElementById("ad-input").value = adDeger;
+      document.getElementById("fiyat-input").value = String(kayit.fiyat).replace(".", ",");
+      document.getElementById("miktar-input").value = String(kayit.miktar).replace(".", ",");
+      renderPreview();
+    }
+  });
+
+  if (fiyatInput) fiyatInput.addEventListener("input", renderPreview);
+  if (kgFiyatInput) kgFiyatInput.addEventListener("input", (e) => { S.kgFiyati = e.target.value; renderPreview(); });
+  miktarInput.addEventListener("input", renderPreview);
+}
+
+function formDegerleri() {
+  const ad = document.getElementById("ad-input")?.value || "";
+  const miktar = parseFloat((document.getElementById("miktar-input")?.value || "").replace(",", "."));
+  const kgModuAktif = S.birim === "gram" && S.girisModu === "birimFiyati";
+  const adetToplamModuAktif = S.birim === "adet" && S.girisModu === "toplam";
+  let fiyat;
+  if (kgModuAktif) {
+    const kgFiyatiNum = parseFloat((document.getElementById("kg-fiyat-input")?.value || "").replace(",", "."));
+    fiyat = (kgFiyatiNum > 0 && miktar > 0) ? (kgFiyatiNum * miktar) / 1000 : NaN;
+  } else if (adetToplamModuAktif) {
+    const girilenFiyatNum = parseFloat((document.getElementById("fiyat-input")?.value || "").replace(",", "."));
+    fiyat = (girilenFiyatNum > 0 && S.kacTane > 0) ? girilenFiyatNum / S.kacTane : NaN;
+  } else {
+    fiyat = parseFloat((document.getElementById("fiyat-input")?.value || "").replace(",", "."));
+  }
+  return { ad, fiyat, miktar, kgModuAktif, adetToplamModuAktif };
+}
+
+function renderKacTaneKutusu() {
+  const kutu = document.getElementById("kactane-kutu");
+  if (!kutu) return;
+  const sifirMi = S.kacTane === 0;
+  kutu.style.background = sifirMi ? "rgba(255,107,74,0.13)" : "var(--bg)";
+  const label = kutu.querySelector(".stepper-label");
+  if (label) label.style.color = sifirMi ? "var(--coral)" : "";
+  let not = kutu.querySelector(".kactane-not");
+  if (sifirMi) {
+    if (!not && label) {
+      not = document.createElement("div");
+      not.className = "kactane-not";
+      not.style.cssText = "font-size:9.5px; color:var(--coral); margin-top:1px;";
+      not.textContent = "Almadın — sadece fiyat takibi, toplamı etkilemez";
+      label.parentElement.appendChild(not);
+    }
+  } else if (not) {
+    not.remove();
+  }
+  const deger = document.getElementById("kac-tane-val");
+  if (deger) deger.style.color = sifirMi ? "var(--coral)" : "";
+}
+
+function renderPreview() {
+  const { fiyat, miktar, kgModuAktif, adetToplamModuAktif } = formDegerleri();
+  const gecerli = fiyat > 0 && miktar > 0 && S.kacTane >= 0;
+  const bf = birimFiyatiHesapla(fiyat, miktar, S.birim);
+  const satirToplami = gecerli ? fiyat * S.kacTane : null;
+  const box = document.getElementById("preview-box");
+  box.innerHTML = `
+    <div class="preview-row">
+      <span>${S.birim==="gram"?"Kilogram fiyatı":"Birim (tane) fiyatı"}</span>
+      <span style="color:${bf?"var(--green)":"var(--muted)"}">${bf?`₺${paraFmt(bf)} / ${S.birim==="gram"?"kg":"adet"}`:"—"}</span>
+    </div>
+    ${S.kacTane>1 && satirToplami ? `
+    <div class="preview-sub">
+      <span>${S.kacTane} tane toplamı</span>
+      <span>₺${paraFmt(satirToplami)}</span>
+    </div>`:""}
+  `;
+  const kgOnizleme = document.getElementById("kg-hesap-onizleme");
+  if (kgOnizleme) {
+    kgOnizleme.innerHTML = kgModuAktif ? `
+      <div class="preview-row">
+        <span style="color:var(--green);">Hesaplanan toplam fiyat</span>
+        <span style="color:${fiyat>0?"var(--green)":"var(--muted)"}">${fiyat>0?`₺${paraFmt(fiyat)}`:"—"}</span>
+      </div>` : adetToplamModuAktif ? `
+      <div class="preview-row">
+        <span style="color:var(--green);">Hesaplanan adet fiyatı</span>
+        <span style="color:${fiyat>0?"var(--green)":"var(--muted)"}">${fiyat>0?`₺${paraFmt(fiyat)} / adet`:"—"}</span>
+      </div>` : "";
+  }
+  document.getElementById("submit-btn").disabled = !gecerli;
+  const btn = document.getElementById("submit-btn");
+  btn.innerHTML = S.editingId ? "✓ Değişikliği kaydet" : "+ Listeye ekle";
+  btn.style.background = gecerli ? (S.editingId ? "var(--coral)" : "var(--ink)") : "#D8DCD8";
+}
+
+function renderDatalist() {
+  const dl = document.getElementById("urun-datalist");
+  if (!dl) return;
+  const kayitlar = tumUrunKayitlari();
+  const isimSeti = new Map();
+  Object.values(kayitlar).forEach(k => isimSeti.set(k.ad.toLocaleLowerCase("tr"), k.ad));
+  S.urunGecmisi.forEach(n => { if (!isimSeti.has(n.toLocaleLowerCase("tr"))) isimSeti.set(n.toLocaleLowerCase("tr"), n); });
+  dl.innerHTML = Array.from(isimSeti.values()).map(n => `<option value="${esc(n)}"></option>`).join("");
+}
+
+/* ============ EKLE / GÜNCELLE / DÜZENLE ============ */
+function gecmiseEkle(isim) {
+  if (!isim || isim === "Ürün") return;
+  if (!S.urunGecmisi.some(n => n.toLocaleLowerCase("tr") === isim.toLocaleLowerCase("tr"))) {
+    S.urunGecmisi = [isim, ...S.urunGecmisi].slice(0, 200);
+    gecmisKaydet();
+  }
+}
+
+function kaydetUrun() {
+  const { ad, fiyat, miktar } = formDegerleri();
+  const gecerli = fiyat > 0 && miktar > 0 && S.kacTane >= 0;
+  if (!gecerli) return;
+  const isim = ad.trim() || "Ürün";
+  const marketAdiDeger = (document.getElementById("market-input")?.value || "").trim();
+  gecmiseEkle(isim);
+  const birimFiyati = birimFiyatiHesapla(fiyat, miktar, S.birim);
+  const satirToplami = fiyat * S.kacTane;
+
+  if (S.editingId) {
+    S.urunler = S.urunler.map(u => u.id === S.editingId ? {
+      ...u, ad: isim, birim: S.birim, fiyat, miktar, kacTane: S.kacTane, birimFiyati, satirToplami,
+      baskasiAdet: Math.min(u.baskasiAdet || 0, S.kacTane),
+      marketAdi: marketAdiDeger,
+    } : u);
+  } else {
+    S.urunler = [{ id: Date.now(), ad: isim, birim: S.birim, fiyat, miktar, kacTane: S.kacTane, birimFiyati, satirToplami, baskasiAdet: 0, kimIcin: "", marketAdi: marketAdiDeger }, ...S.urunler];
+  }
+  urunKaydet();
+  formuTemizle();
+  render();
+}
+
+function formuTemizle() {
+  S.editingId = null;
+  S.birim = "gram";
+  S.kacTane = 1;
+  S.girisModu = "toplam";
+  S.kgFiyati = "";
+  S.marketAdi = "";
+}
+
+function duzenle(id) {
+  const u = S.urunler.find(x => x.id === id);
+  if (!u) return;
+  S.editingId = id;
+  S.birim = u.birim;
+  S.kacTane = u.kacTane;
+  S.girisModu = "toplam";
+  S.kgFiyati = "";
+  S.marketAdi = u.marketAdi || "";
+  render();
+  document.getElementById("ad-input").value = u.ad === "Ürün" ? "" : (u.ad || "");
+  document.getElementById("fiyat-input").value = String(u.fiyat).replace(".", ",");
+  document.getElementById("miktar-input").value = String(u.miktar).replace(".", ",");
+  renderPreview();
+  document.querySelector(".card").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function sil(id) {
+  S.urunler = S.urunler.filter(u => u.id !== id);
+  if (S.editingId === id) formuTemizle();
+  urunKaydet();
+  render();
+}
+
+/* ============ LİSTE ============ */
+function renderList() {
+  const el = document.getElementById("urun-listesi");
+  if (!el) return;
+  const q = S.arama.trim().toLocaleLowerCase("tr");
+  const gosterilecek = q ? S.urunler.filter(u => (u.ad || "").toLocaleLowerCase("tr").includes(q)) : S.urunler;
+
+  if (gosterilecek.length === 0) {
+    el.innerHTML = S.urunler.length > 0
+      ? `<div class="empty-state">🔍<br/>"${esc(S.arama)}" ile eşleşen ürün yok.</div>`
+      : `<div class="empty-state">🥕<br/>Henüz ürün eklemedin.<br/>İlk ürününü yukarıdan ekle.</div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="list-card">` + gosterilecek.map(u => {
+    const i = S.urunler.findIndex(x => x.id === u.id);
+    const baskasi = (u.baskasiAdet || 0) > 0;
+    return `
+    <div class="item-row ${S.editingId===u.id?"editing":""} ${baskasi?"baskasi":""}">
+      <button class="person-btn" data-action="baskasi-arttir" data-id="${u.id}">
+        <div class="person-circle ${baskasi?"active":""}">${baskasi ? (u.kacTane>1?`${u.baskasiAdet}/${u.kacTane}`:"👤") : "👤"}</div>
+      </button>
+      <div class="item-info" data-action="duzenle-satir" data-id="${u.id}">
+        <div class="item-name ${baskasi?"baskasi":""}">
+          ${esc(u.ad)}
+          ${u.kacTane===0?`<span class="item-tag tag-kacTane">almadım, fiyat takibi</span>`:""}
+          ${u.kacTane>1?`<span class="item-tag tag-kacTane">×${u.kacTane}</span>`:""}
+          ${baskasi?`<span class="item-tag tag-baskasi">${u.kacTane>1?`${u.baskasiAdet}/${u.kacTane} `:""}${u.kimIcin?esc(u.kimIcin)+" için":"başkası için"}</span>`:""}
+        </div>
+        <div class="item-sub">${u.birim==="gram"?`${miktarFmt(u.miktar)} g · ₺${paraFmt(u.birimFiyati)}/kg`:`${miktarFmt(u.miktar)} adet/koli · ₺${paraFmt(u.birimFiyati)}/adet`}${u.marketAdi?` · ${esc(u.marketAdi)}`:""}</div>
+        ${baskasi?`<input class="kim-input" data-action="kimicin" data-id="${u.id}" placeholder="kimin için? (isim yaz)" value="${esc(u.kimIcin||"")}" onclick="event.stopPropagation()" />`:""}
+      </div>
+      <span class="item-price ${baskasi?"baskasi":""}">₺${paraFmt(u.satirToplami)}</span>
+      <div class="reorder-actions">
+        <button data-action="yukari" data-id="${u.id}" ${i===0?"disabled":""}>▲</button>
+        <button data-action="asagi" data-id="${u.id}" ${i===S.urunler.length-1?"disabled":""}>▼</button>
+      </div>
+      <div class="item-actions">
+        <button data-action="duzenle-satir" data-id="${u.id}">✏️</button>
+        <button data-action="sil" data-id="${u.id}">🗑️</button>
+      </div>
+    </div>`;
+  }).join("") + `</div>`;
+}
+
+/* ============ BAŞKASI İÇİN (aktif liste) ============ */
+function renderBaska() {
+  const toplamBaskasi = S.urunler.reduce((a,u)=>a + u.fiyat*(u.baskasiAdet||0), 0);
+  const adetBaskasi = S.urunler.reduce((a,u)=>a + (u.baskasiAdet||0), 0);
+  const toggleWrap = document.getElementById("baska-toggle-wrap");
+  const panelWrap = document.getElementById("baska-panel-wrap");
+  if (toplamBaskasi <= 0) { toggleWrap.innerHTML=""; panelWrap.innerHTML=""; return; }
+
+  toggleWrap.innerHTML = `
+    <button class="baska-toggle" data-action="baska-toggle">
+      <span>👤 Başkaları için (${adetBaskasi} adet · ₺${paraFmt(toplamBaskasi)})</span>
+      <span style="font-size:10px; color:var(--purple);">${S.baskaAcik?"gizle":"göster"}</span>
+    </button>`;
+
+  if (!S.baskaAcik) { panelWrap.innerHTML = ""; return; }
+
+  const gruplar = {};
+  S.urunler.forEach(u => {
+    if ((u.baskasiAdet||0) > 0) {
+      const key = (u.kimIcin||"").trim() || "İsim belirtilmedi";
+      if (!gruplar[key]) gruplar[key] = [];
+      gruplar[key].push(u);
+    }
+  });
+
+  panelWrap.innerHTML = `<div class="baska-panel">` + Object.entries(gruplar).map(([kisi, liste]) => {
+    const grupToplami = liste.reduce((a,u)=>a + u.fiyat*u.baskasiAdet, 0);
+    return `
+      <div class="baska-group-head"><span>${esc(kisi)}</span><span>₺${paraFmt(grupToplami)}</span></div>
+      ${liste.map(u=>`<div class="baska-item"><span>${esc(u.ad)} ${u.kacTane>1?`(${u.baskasiAdet}/${u.kacTane})`:""}</span><span>₺${paraFmt(u.fiyat*u.baskasiAdet)}</span></div>`).join("")}
+      <div style="padding-bottom:8px;"></div>
+    `;
+  }).join("") + `</div>`;
+}
+
+/* ============ ALIŞVERİŞİ KAYDET (arşivle) ============ */
+function renderSaveCard() {
+  const el = document.getElementById("save-card-wrap");
+  if (S.urunler.length === 0) { el.innerHTML = ""; return; }
+  if (!S.kaydetPaneliAcik) {
+    el.innerHTML = `<button class="save-btn" data-action="kaydet-panel-ac">💾 Alışverişi Bitir ve Kaydet</button>`;
+  } else {
+    el.innerHTML = `
+      <div class="save-panel">
+        <label>Bu alışverişe bir isim ver</label>
+        <input type="text" id="alisveris-adi" placeholder="${bugununAdi()}" value="${esc(S.alisverisAdiGecici||"")}" />
+        <label style="margin-top:8px; display:block;">Kategori</label>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">
+          ${tumKategoriler().map(k => `
+            <button data-action="aktif-kategori" data-kategori="${esc(k)}" style="padding:5px 10px; border-radius:999px; border:none; cursor:pointer; font-size:10.5px; font-weight:700; background:${(S.aktifKategori||"Market")===k?'var(--green)':'var(--bg)'}; color:${(S.aktifKategori||"Market")===k?'#fff':'var(--ink)'};">${esc(k)}</button>
+          `).join("")}
+        </div>
+        <input type="text" id="aktif-kategori-input" placeholder="ya da yeni bir kategori yaz" value="${(S.aktifKategori && !tumKategoriler().includes(S.aktifKategori)) ? esc(S.aktifKategori) : ""}" style="margin-top:6px; font-size:11.5px;" />
+        <div class="actions">
+          <button class="btn-cancel" data-action="kaydet-panel-iptal">Vazgeç</button>
+          <button class="btn-confirm" data-action="alisveris-kaydet">Kaydet ve Yeni Listeye Başla</button>
+        </div>
+      </div>`;
+  }
+}
+
+function alisverisiKaydet() {
+  if (S.urunler.length === 0) return;
+  const isimInput = document.getElementById("alisveris-adi");
+  const isim = (isimInput?.value || "").trim() || bugununAdi();
+  S.arsiv = [{ id: Date.now(), isim, tarih: new Date().toISOString(), urunler: S.urunler, kategori: S.aktifKategori || "Market" }, ...S.arsiv];
+  arsivKaydet();
+  S.urunler = [];
+  S.aktifKategori = "Market";
+  urunKaydet();
+  S.kaydetPaneliAcik = false;
+  formuTemizle();
+  render();
+}
+
+function kayittanDuzenlemeyeGit(arsivId, urunId) {
+  const a = S.arsiv.find(x => x.id === arsivId);
+  const u = a && a.urunler.find(x => x.id === urunId);
+  if (!a || !u) return;
+  S.acikKarsilastirma = null;
+  S.acikArsiv = a.id;
+  S.arsivDraft = {
+    arsivId, urunId,
+    ad: u.ad === "Ürün" ? "" : (u.ad || ""), birim: u.birim,
+    fiyat: String(u.fiyat).replace(".", ","), miktar: String(u.miktar).replace(".", ","),
+    kacTane: u.kacTane, baskasiAdet: u.baskasiAdet || 0, kimIcin: u.kimIcin || "",
+    girisModu: "toplam", kgFiyati: "",
+  };
+  renderGecmis();
+  setTimeout(() => {
+    document.getElementById(`arsiv-kayit-${a.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 80);
+}
+
+function arsivKategoriGuncelle(arsivId, yeniKategori) {
+  S.arsiv = S.arsiv.map(a => a.id === arsivId ? { ...a, kategori: yeniKategori } : a);
+  arsivKaydet();
+  renderGecmis();
+}
+
+/* ============ GEÇMİŞ SEKMESİ ============ */
+function renderGecmis() {
+  const el = document.getElementById("gecmis-panel");
+  const karsilastirma = fiyatKarsilastirma();
+  const gruplarVarMi = Object.keys(urunFiyatGruplari()).length > 0;
+  let html = "";
+
+  if (gruplarVarMi) {
+    html += `
+      <div class="compare-card">
+        <p class="compare-title">Fiyat Karşılaştırması</p>
+        <div style="position:relative; margin-bottom:12px;">
+          <span style="position:absolute; left:11px; top:50%; transform:translateY(-50%); opacity:0.5; font-size:13px;">🔍</span>
+          <input type="search" id="karsilastirma-arama" placeholder="Ürün ara: geçmiş fiyatları ve marketleri gör..." value="${esc(S.karsilastirmaArama||"")}" style="padding-left:34px; padding-right:30px; background:#fff; box-shadow:0 4px 14px -6px rgba(22,36,28,0.1);" />
+          ${S.karsilastirmaArama ? `<button data-action="karsilastirma-arama-temizle" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; opacity:0.5; font-size:13px;">✕</button>` : ""}
+        </div>
+  `;
+
+  if ((S.karsilastirmaArama||"").trim()) {
+    const aramaSonuc = karsilastirmaAramaSonucu(S.karsilastirmaArama);
+    if (aramaSonuc.length > 0) {
+      html += `<div class="compare-list">` + aramaSonuc.map((sonuc, idx) => `
+        <div style="${idx !== aramaSonuc.length-1 ? 'border-bottom:1px solid #EEF0EC;' : ''}">
+          <div style="padding:12px 16px 4px;">
+            <span style="font-size:12.5px; font-weight:800; color:var(--ink);">${esc(sonuc.ad)}</span>
+            <span style="font-size:10px; color:var(--muted); margin-left:6px;">${sonuc.kayitlar.length} kayıt</span>
+          </div>
+          <div style="padding-bottom:8px;">
+            ${sonuc.kayitlar.map(kay => `
+              <button data-action="kayittan-duzenle" data-arsiv="${kay.arsivId}" data-urun="${kay.urunId}" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:6px 16px; background:none; border:none; cursor:pointer; text-align:left;">
+                <span style="font-size:11px; color:var(--muted);">${new Date(kay.tarih).toLocaleDateString("tr-TR",{day:"2-digit",month:"short",year:"numeric"})}${kay.marketAdi?` · ${esc(kay.marketAdi)}`:""}</span>
+                <span style="font-size:11.5px; font-weight:700; color:var(--ink); font-family:'Courier New',monospace;">₺${paraFmt(kay.birimFiyati)}/${kay.birim==="gram"?"kg":"adet"}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `).join("") + `</div>`;
+    } else {
+      html += `<div style="text-align:center; padding:24px 0; color:var(--muted);"><p style="font-size:12px;">"${esc(S.karsilastirmaArama)}" ile eşleşen ürün bulunamadı.</p></div>`;
+    }
+  } else if (karsilastirma.length > 0) {
+    html += `<div class="compare-list">
+          ${karsilastirma.map((k, idx) => {
+            const artti = k.fark > 0.005, azaldi = k.fark < -0.005;
+            const renk = artti ? "#D14D3C" : azaldi ? "var(--green)" : "var(--muted)";
+            const ok = artti ? "▲" : azaldi ? "▼" : "–";
+            const acikMi = S.acikKarsilastirma === k.ad;
+            return `
+            <div>
+              <button data-action="karsilastirma-toggle" data-ad="${esc(k.ad)}" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:none; border:none; cursor:pointer; text-align:left;">
+                <div style="min-width:0;">
+                  <div class="compare-name">${esc(k.ad)}</div>
+                  <div class="compare-sub">₺${paraFmt(k.onceki.birimFiyati)}${k.onceki.marketAdi?` (${esc(k.onceki.marketAdi)})`:""} → ₺${paraFmt(k.sonraki.birimFiyati)}${k.sonraki.marketAdi?` (${esc(k.sonraki.marketAdi)})`:""} /${k.birim==="gram"?"kg":"adet"}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                  <div class="compare-delta" style="color:${renk}">${ok} ${artti?"+":""}${paraFmt(k.yuzde)}%</div>
+                  <span style="color:var(--muted); font-size:11px; transform:rotate(${acikMi?90:0}deg); display:inline-block;">›</span>
+                </div>
+              </button>
+              ${acikMi ? `
+              <div style="padding:0 16px 12px;">
+                <div style="font-size:9px; color:var(--muted); font-weight:700; margin-bottom:6px;">TÜM GEÇMİŞ (${k.tumKayitlar.length} kayıt) — düzenlemek için birine dokun</div>
+                <div style="border-radius:8px; overflow:hidden; background:var(--bg);">
+                  ${k.tumKayitlar.map((kay, i) => `
+                    <button data-action="kayittan-duzenle" data-arsiv="${kay.arsivId}" data-urun="${kay.urunId}" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:none; border:none; cursor:pointer; text-align:left; ${i!==k.tumKayitlar.length-1?'border-bottom:1px solid #E4E7E1;':''}">
+                      <div style="min-width:0;">
+                        <div style="font-size:10.5px; color:var(--ink); font-weight:600;">${new Date(kay.tarih).toLocaleDateString("tr-TR",{day:"2-digit",month:"short",year:"numeric"})}</div>
+                        <div style="font-size:9px; color:var(--muted);">${esc(kay.alisverisIsim||"")}${kay.marketAdi?` · ${esc(kay.marketAdi)}`:""}</div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;">
+                        <span style="font-size:11px; font-weight:700; color:var(--ink); font-family:'Courier New',monospace;">₺${paraFmt(kay.birimFiyati)}/${kay.birim==="gram"?"kg":"adet"}</span>
+                        <span style="color:var(--green); font-size:11px;">✏️</span>
+                      </div>
+                    </button>
+                  `).join("")}
+                </div>
+              </div>` : ""}
+              ${idx !== karsilastirma.length-1 ? '<div style="border-bottom:1px solid #EEF0EC; margin:0 16px;"></div>' : ""}
+            </div>`;
+          }).join("")}
+        </div>`;
+  }
+  html += `</div>`;
+  }
+
+  html += `<div style="margin:0 16px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;">
+      <p class="compare-title" style="margin-bottom:0;">Kayıtlı Alışverişler</p>
+      ${S.arsiv.length > 1 ? `
+      <div style="display:flex; border-radius:8px; overflow:hidden; border:1px solid rgba(31,122,92,0.2);">
+        <button data-action="arsiv-sirala" data-tur="tarih" style="padding:4px 8px; font-size:9.5px; font-weight:700; border:none; cursor:pointer; background:${S.arsivSiralamaTuru==="tarih"?"var(--green)":"#fff"}; color:${S.arsivSiralamaTuru==="tarih"?"#fff":"var(--green)"};">Tarihe Göre</button>
+        <button data-action="arsiv-sirala" data-tur="az" style="padding:4px 8px; font-size:9.5px; font-weight:700; border:none; cursor:pointer; background:${S.arsivSiralamaTuru==="az"?"var(--green)":"#fff"}; color:${S.arsivSiralamaTuru==="az"?"#fff":"var(--green)"};">A-Z</button>
+      </div>` : ""}
+    </div>`;
+  if (S.arsiv.length === 0) {
+    html += `<div class="empty-state" style="margin:0 0 16px;">📜<br/>Henüz kaydedilmiş alışveriş yok.<br/>Liste sekmesinde "Alışverişi Bitir ve Kaydet" ile başla.</div>`;
+  } else {
+    const arsivSirali = S.arsivSiralamaTuru === "az"
+      ? [...S.arsiv].sort((a,b) => a.isim.localeCompare(b.isim, "tr"))
+      : [...S.arsiv].sort((a,b) => arsivSiraTarihi(b) - arsivSiraTarihi(a));
+    html += `<div class="archive-list">` + arsivSirali.map(a => {
+      const acik = S.acikArsiv === a.id;
+      const t = a.urunler.reduce((s,u)=>s+u.satirToplami,0);
+      return `
+      <div class="archive-row" id="arsiv-kayit-${a.id}">
+        <div class="archive-head">
+          <button class="archive-name-wrap" data-action="arsiv-toggle" data-id="${a.id}">
+            ${S.arsivIsimDuzenle === a.id
+              ? `<input class="archive-name-input" id="arsiv-isim-input-${a.id}" value="${esc(a.isim)}" onclick="event.stopPropagation()" />`
+              : `<div class="archive-name">${esc(a.isim)}</div>`}
+            <div class="archive-count">${a.urunler.length} kalem${a.kategori ? ` · ${esc(a.kategori)}` : ""}</div>
+          </button>
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${acik && S.arsivIsimDuzenle !== a.id ? `<button data-action="arsiv-isim-duzenle" data-id="${a.id}" style="background:none;border:none;cursor:pointer;">✏️</button>` : ""}
+            ${S.arsivIsimDuzenle === a.id ? `<button data-action="arsiv-isim-kaydet" data-id="${a.id}" style="background:none;border:none;cursor:pointer; color:var(--green); font-size:11px; font-weight:700;">Kaydet</button>` : ""}
+            <span class="archive-total">₺${paraFmt(t)}</span>
+            <button data-action="arsiv-toggle" data-id="${a.id}" style="background:none;border:none;cursor:pointer;">${acik?"︿":"﹀"}</button>
+          </div>
+        </div>
+        ${acik ? renderArsivDetay(a) : ""}
+      </div>`;
+    }).join("") + `</div>`;
+  }
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function renderPuan() {
+  const el = document.getElementById("puan-panel");
+  const sonuclar = kkSonuclar();
+  const islemler = ayIslemleri();
+  const simulasyon = kkSimulasyon();
+  const toplamSimdi = S.urunler.reduce((s,u)=>s+u.satirToplami,0);
+
+  let html = `<div style="margin:0 16px;">`;
+
+  if (sonuclar.length > 0) {
+    html += `
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+        <p class="compare-title" style="margin:0;">Bu Ay Kazanacağın Puan</p>
+        <span style="font-size:9.5px; color:var(--muted);">${islemler.length} alışveriş</span>
+      </div>
+      <div class="compare-list" style="margin-bottom:6px;">
+        ${sonuclar.map((k,idx) => `
+          <div class="compare-row" style="${idx===0 && k.kazanilan>0 ? 'background:rgba(31,122,92,0.04);' : ''}">
+            <div>
+              <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+                <span class="compare-name">${esc(k.banka)}</span>
+                <span style="font-size:9px; padding:2px 6px; border-radius:999px; background:rgba(124,92,252,0.1); color:var(--purple); font-weight:700;">${esc(k.kanal)}</span>
+                <span style="font-size:9px; padding:2px 6px; border-radius:999px; background:rgba(31,122,92,0.1); color:var(--green); font-weight:700;">${esc(k.kategori||"Tümü")}</span>
+                ${idx===0 && k.kazanilan>0 ? `<span style="font-size:9px; padding:2px 6px; border-radius:999px; background:rgba(31,122,92,0.1); color:var(--green); font-weight:700;">en iyi</span>` : ""}
+              </div>
+              <div class="compare-sub">${esc(kuralTipiBul(k.kural).ad)} · Her ₺${paraFmt(k.esik)}'ye ₺${paraFmt(k.puan)} ${k.tavan?`· tavan ₺${paraFmt(k.tavan)}`:""}${k.tavanaTakildi?" · tavana takıldı":""}</div>
+            </div>
+            <span class="compare-delta" style="color:${k.kazanilan>0?'var(--green)':'var(--muted)'}">₺${paraFmt(k.kazanilan)}</span>
+          </div>
+        `).join("")}
+      </div>
+      <p style="font-size:9.5px; color:var(--muted); margin:0 0 16px;">Bu ay kaydettiğin alışverişler + şu an açık olan liste kullanılıyor.</p>
+    `;
+  }
+
+  html += `
+    <details style="margin-bottom:16px;">
+      <summary style="font-size:11px; color:var(--green); font-weight:700; cursor:pointer;">Tek işlem dene (hızlı simülasyon)</summary>
+      <div style="border-radius:16px; padding:14px; margin-top:8px; background:#fff; box-shadow:0 8px 24px -8px rgba(22,36,28,0.12);">
+        <label style="font-size:10px; color:var(--muted); font-weight:600; padding-left:2px;">DENENECEK TUTAR (₺)</label>
+        <input type="text" id="kk-hesap-tutari" inputmode="decimal" placeholder="Boş bırakırsan şu anki liste toplamı: ₺${paraFmt(toplamSimdi)}" value="${esc(S.kkHesapTutari||"")}" style="margin-top:4px; font-family:'Courier New',monospace;" />
+        <div id="kk-simulasyon-sonuc" style="margin-top:10px;">${renderSimulasyonIcerik(simulasyon)}</div>
+        <p style="font-size:9px; color:var(--muted); margin-top:8px;">Bu, tek bir alışverişte bu tutarı harcarsan ne kazanacağını gösterir.</p>
+      </div>
+    </details>
+  `;
+
+  html += `<p class="compare-title">${S.kkDuzenleId ? "Kampanyayı Düzenle" : "Yeni Kampanya Ekle"}</p>`;
+  html += `
+    <div style="border-radius:16px; padding:14px; margin-bottom:16px; background:#fff; box-shadow:0 8px 24px -8px rgba(22,36,28,0.12);">
+      <input type="text" id="kk-banka" placeholder="Banka adı (örn. Vakıfbank)" value="${esc(S.kkBanka||"")}" style="margin-bottom:8px;" />
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        ${["Fiziki","QR","NFC"].map(k => `
+          <button data-action="kk-kanal" data-kanal="${k}" style="flex:1; padding:7px; border:none; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; background:${(S.kkKanal||"NFC")===k?'var(--purple)':'var(--bg)'}; color:${(S.kkKanal||"NFC")===k?'#fff':'var(--ink)'};">${k}</button>
+        `).join("")}
+      </div>
+
+      <label style="font-size:9px; color:var(--muted); font-weight:600;">KATEGORİ (hangi tür alışverişte geçerli)</label>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 8px;">
+        ${["Tümü", ...tumKategoriler()].map(k => `
+          <button data-action="kk-kategori" data-kategori="${esc(k)}" style="padding:5px 10px; border-radius:999px; border:none; cursor:pointer; font-size:10.5px; font-weight:700; background:${(S.kkKategori||"Tümü")===k?'var(--purple)':'var(--bg)'}; color:${(S.kkKategori||"Tümü")===k?'#fff':'var(--ink)'};">${esc(k)}</button>
+        `).join("")}
+      </div>
+      <input type="text" id="kk-kategori-input" placeholder="ya da yeni bir kategori yaz" value="${(S.kkKategori && S.kkKategori!=="Tümü" && !tumKategoriler().includes(S.kkKategori)) ? esc(S.kkKategori) : ""}" style="margin-bottom:8px; font-size:11px;" />
+      <div style="display:flex; align-items:center; justify-content:space-between; padding-left:2px;">
+        <label style="font-size:9px; color:var(--muted); font-weight:600;">KOŞUL TİPİ</label>
+        <button data-action="kt-toggle" style="background:none; border:none; cursor:pointer; font-size:9.5px; color:var(--green); font-weight:700;">${S.ktAcik ? "gizle" : "yönet"}</button>
+      </div>
+      <div style="margin:4px 0 8px; display:flex; flex-direction:column; gap:6px;">
+        ${S.kuralTipleri.map(kt => {
+          const y = YONTEM_SECENEKLERI.find(y => y.yontem === kt.yontem) || YONTEM_SECENEKLERI[1];
+          const secili = (S.kkKural || "her_cekim") === kt.id;
+          return `
+          <button data-action="kk-kural" data-kural="${kt.id}" style="text-align:left; border-radius:8px; padding:7px 10px; cursor:pointer; background:${secili?'rgba(124,92,252,0.1)':'var(--bg)'}; border:1px solid ${secili?'rgba(124,92,252,0.4)':'transparent'};">
+            <div style="font-size:11px; font-weight:700; color:${secili?'var(--purple)':'var(--ink)'};">${esc(kt.ad)}</div>
+            <div style="font-size:9.5px; color:var(--muted);">${esc(y.aciklama)}</div>
+          </button>`;
+        }).join("")}
+      </div>
+
+      ${S.ktAcik ? `
+      <div style="border-radius:10px; padding:10px; margin-bottom:8px; background:rgba(31,122,92,0.04); border:1px solid rgba(31,122,92,0.2);">
+        <div style="font-size:10.5px; font-weight:700; margin-bottom:6px;">${S.ktDuzenleId ? "Koşul Tipini Düzenle" : "Yeni Koşul Tipi Ekle"}</div>
+        <input type="text" id="kt-ad" placeholder="Ad (örn. Haftalık Toplam)" value="${esc(S.ktAd||"")}" style="margin-bottom:6px;" />
+        <label style="font-size:9px; color:var(--muted); font-weight:600;">HANGİ HESAPLAMA YÖNTEMİYLE ÇALIŞSIN?</label>
+        <div style="margin:4px 0 8px; display:flex; flex-direction:column; gap:4px;">
+          ${YONTEM_SECENEKLERI.map(y => `
+            <button data-action="kt-yontem" data-yontem="${y.yontem}" style="text-align:left; border-radius:6px; padding:5px 8px; cursor:pointer; background:${S.ktYontem===y.yontem?'#fff':'transparent'}; border:1px solid ${S.ktYontem===y.yontem?'var(--green)':'transparent'};">
+              <div style="font-size:10.5px; font-weight:700; color:${S.ktYontem===y.yontem?'var(--green)':'var(--ink)'};">${esc(y.ad)}</div>
+            </button>
+          `).join("")}
+        </div>
+        <div style="display:flex; gap:6px;">
+          ${S.ktDuzenleId ? `<button data-action="kt-vazgec" style="flex:1; padding:7px; border:none; border-radius:8px; background:#fff; color:var(--muted); font-weight:700; font-size:10.5px;">Vazgeç</button>` : ""}
+          <button data-action="kt-kaydet" style="flex:1; padding:7px; border:none; border-radius:8px; background:var(--green); color:#fff; font-weight:700; font-size:10.5px;">${S.ktDuzenleId ? "Kaydet" : "+ Ekle"}</button>
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed rgba(31,122,92,0.25);">
+          ${S.kuralTipleri.map(kt => `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:4px 0;">
+              <span style="font-size:10.5px;">${esc(kt.ad)}</span>
+              <div style="display:flex; gap:8px;">
+                <button data-action="kt-duzenle" data-id="${kt.id}" style="background:none;border:none;cursor:pointer;">✏️</button>
+                <button data-action="kt-sil" data-id="${kt.id}" style="background:none;border:none;cursor:pointer;">🗑️</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>` : ""}
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+        <div>
+          <label style="font-size:9px; color:var(--muted); font-weight:600;">EŞİK (₺)</label>
+          <input type="text" id="kk-esik" inputmode="decimal" placeholder="750" value="${esc(S.kkEsik||"")}" style="font-size:12px; padding:7px 8px; margin-top:2px; font-family:'Courier New',monospace;" />
+        </div>
+        <div>
+          <label style="font-size:9px; color:var(--muted); font-weight:600;">PUAN (₺)</label>
+          <input type="text" id="kk-puan" inputmode="decimal" placeholder="25" value="${esc(S.kkPuan||"")}" style="font-size:12px; padding:7px 8px; margin-top:2px; font-family:'Courier New',monospace;" />
+        </div>
+        <div>
+          <label style="font-size:9px; color:var(--muted); font-weight:600;">TAVAN (₺)</label>
+          <input type="text" id="kk-tavan" inputmode="decimal" placeholder="250" value="${esc(S.kkTavan||"")}" style="font-size:12px; padding:7px 8px; margin-top:2px; font-family:'Courier New',monospace;" />
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        ${S.kkDuzenleId ? `<button data-action="kk-vazgec" style="flex:1; padding:10px; border:none; border-radius:10px; background:var(--bg); color:var(--muted); font-weight:700; font-size:12px;">Vazgeç</button>` : ""}
+        <button data-action="kk-kaydet" style="flex:1; padding:10px; border:none; border-radius:10px; background:var(--purple); color:#fff; font-weight:700; font-size:12px;">${S.kkDuzenleId ? "Kaydet" : "+ Kampanya Ekle"}</button>
+      </div>
+    </div>
+  `;
+
+  if (S.kartKampanyalari.length > 0) {
+    html += `<div class="archive-list">` + S.kartKampanyalari.map(k => `
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid #EEF0EC;">
+        <div style="min-width:0;">
+          <div style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px;">
+            ${esc(k.banka)}
+            <span style="font-size:9px; padding:2px 6px; border-radius:999px; background:rgba(124,92,252,0.1); color:var(--purple); font-weight:700;">${esc(k.kanal)}</span>
+            <span style="font-size:9px; padding:2px 6px; border-radius:999px; background:rgba(31,122,92,0.1); color:var(--green); font-weight:700;">${esc(k.kategori||"Tümü")}</span>
+          </div>
+          <div style="font-size:10px; color:var(--muted);">₺${paraFmt(k.esik)} → ₺${paraFmt(k.puan)} ${k.tavan?`(tavan ₺${paraFmt(k.tavan)})`:"(tavansız)"} · ${esc(kuralTipiBul(k.kural).ad)}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+          <button data-action="kk-duzenle" data-id="${k.id}" style="background:none;border:none;cursor:pointer;">✏️</button>
+          <button data-action="kk-sil" data-id="${k.id}" style="background:none;border:none;cursor:pointer;">🗑️</button>
+        </div>
+      </div>
+    `).join("") + `</div>`;
+  } else {
+    html += `<div class="empty-state" style="margin:0 0 16px;">Henüz kampanya eklemedin.<br/>Ay başında bankaların o ayki kampanyalarını buraya gir.</div>`;
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function renderSimulasyonIcerik(simulasyon) {
+  if (simulasyon.length === 0) return "";
+  return simulasyon.map(k => `
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+      <span style="font-size:11px;">${esc(k.banka)} <span style="color:var(--muted);">(${esc(k.kanal)})</span></span>
+      <span style="font-size:12px; font-weight:700; color:${k.kazanilan>0?'var(--green)':'var(--muted)'}; font-family:'Courier New',monospace;">₺${paraFmt(k.kazanilan)}</span>
+    </div>
+  `).join("");
+}
+
+function hesaplaArsivDraftFiyat(d) {
+  if (!d) return NaN;
+  const girisModu = d.girisModu || "toplam";
+  const kacTaneNum = Number(d.kacTane) || 1;
+  const miktarNum = parseFloat(String(d.miktar).replace(",", "."));
+  if (d.birim === "gram" && girisModu === "birimFiyati") {
+    const kgFiyatiNum = parseFloat(String(d.kgFiyati || "").replace(",", "."));
+    return kgFiyatiNum > 0 && miktarNum > 0 ? (kgFiyatiNum * miktarNum) / 1000 : NaN;
+  }
+  if (d.birim === "adet" && girisModu === "toplam") {
+    const girilenNum = parseFloat(String(d.fiyat).replace(",", "."));
+    return girilenNum > 0 && kacTaneNum > 0 ? girilenNum / kacTaneNum : NaN;
+  }
+  return parseFloat(String(d.fiyat).replace(",", "."));
+}
+
+function renderArsivDraftKutusu(d) {
+  const girisModu = d.girisModu || "toplam";
+  const kgModu = d.birim === "gram" && girisModu === "birimFiyati";
+  const adetToplamModu = d.birim === "adet" && girisModu === "toplam";
+  const hesaplananFiyat = hesaplaArsivDraftFiyat(d);
+  return `
+    <div class="arsiv-edit-box">
+      <input type="text" id="arsiv-draft-ad" value="${esc(d.ad)}" placeholder="Ürün adı" style="width:100%; font-weight:700;" />
+      <div style="display:flex; gap:5px; margin-top:6px;">
+        ${["gram","adet"].map(b => `
+          <button data-action="arsiv-draft-birim" data-birim="${b}" style="flex:1; padding:4px; border-radius:8px; border:none; cursor:pointer; font-size:9.5px; font-weight:700; background:${d.birim===b?'var(--green)':'#fff'}; color:${d.birim===b?'#fff':'var(--ink)'};">${b==="gram"?"Gram ile":"Adet ile"}</button>
+        `).join("")}
+      </div>
+      <div style="display:flex; gap:5px; margin-top:5px;">
+        <button data-action="arsiv-draft-giris-modu" data-modu="toplam" style="flex:1; padding:4px; border-radius:8px; border:none; cursor:pointer; font-size:9px; font-weight:700; background:${girisModu==="toplam"?'rgba(31,122,92,0.12)':'#fff'}; color:${girisModu==="toplam"?'var(--green)':'var(--muted)'};">Toplam fiyatı biliyorum</button>
+        <button data-action="arsiv-draft-giris-modu" data-modu="birimFiyati" style="flex:1; padding:4px; border-radius:8px; border:none; cursor:pointer; font-size:9px; font-weight:700; background:${girisModu==="birimFiyati"?'rgba(31,122,92,0.12)':'#fff'}; color:${girisModu==="birimFiyati"?'var(--green)':'var(--muted)'};">${d.birim==="gram"?"Kg fiyatını biliyorum":"Adet fiyatını biliyorum"}</button>
+      </div>
+      <div class="arsiv-edit-row" style="margin-top:5px;">
+        ${kgModu
+          ? `<input type="text" id="arsiv-draft-kgfiyat" value="${esc(d.kgFiyati||"")}" placeholder="kg fiyatı" inputmode="decimal" style="width:64px;" />`
+          : `<input type="text" id="arsiv-draft-fiyat" value="${esc(d.fiyat)}" placeholder="${adetToplamModu?"toplam fiyat":"fiyat"}" inputmode="decimal" style="width:64px;" />`}
+        <input type="text" id="arsiv-draft-miktar" value="${esc(d.miktar)}" placeholder="${d.birim==="gram"?"gram":"miktar"}" inputmode="decimal" style="width:56px;" />
+        <input type="text" id="arsiv-draft-kactane" value="${esc(String(d.kacTane))}" placeholder="kaç tane" inputmode="numeric" style="width:44px;" />
+      </div>
+      ${(kgModu || adetToplamModu) ? `<div id="arsiv-draft-onizleme" style="font-size:9.5px; font-weight:700; color:var(--green); margin-top:3px;">Hesaplanan ${kgModu?"toplam fiyat":"adet fiyatı"}: ${hesaplananFiyat>0?`₺${paraFmt(hesaplananFiyat)}`:"—"}</div>` : ""}
+      <div class="arsiv-edit-row">
+        <span style="font-size:10px; color:var(--muted); flex-shrink:0;">Başkası için:</span>
+        <button data-action="arsiv-draft-baska-eksi" style="width:20px;height:20px;border-radius:999px;border:none;background:#fff;cursor:pointer;">−</button>
+        <span style="font-size:11px; font-weight:700; color:var(--purple); width:16px; text-align:center;">${d.baskasiAdet||0}</span>
+        <button data-action="arsiv-draft-baska-arti" style="width:20px;height:20px;border-radius:999px;border:none;background:var(--purple);color:#fff;cursor:pointer;">+</button>
+        ${d.baskasiAdet>0?`<input type="text" id="arsiv-draft-kimicin" value="${esc(d.kimIcin)}" placeholder="kimin için?" style="flex:1; min-width:0; color:var(--purple);" />`:""}
+      </div>
+      <div class="arsiv-edit-actions">
+        <button data-action="arsiv-draft-iptal" style="background:#fff; color:var(--muted);">Vazgeç</button>
+        <button data-action="arsiv-draft-kaydet" style="background:var(--coral); color:#fff;">${d.urunId===null||d.urunId===undefined?"Listeye Ekle":"Kaydet"}</button>
+      </div>
+    </div>`;
+}
+
+function renderArsivDetay(a) {
+  const buAlisverisBaska = {};
+  a.urunler.forEach(u => {
+    if ((u.baskasiAdet || 0) > 0) {
+      const kisi = (u.kimIcin || "").trim() || "İsim belirtilmedi";
+      if (!buAlisverisBaska[kisi]) buAlisverisBaska[kisi] = 0;
+      buAlisverisBaska[kisi] += u.fiyat * u.baskasiAdet;
+    }
+  });
+  const baskaGirdileri = Object.entries(buAlisverisBaska);
+  const yeniEkleniyorMu = S.arsivDraft && S.arsivDraft.arsivId === a.id && (S.arsivDraft.urunId === null || S.arsivDraft.urunId === undefined);
+
+  return `
+    <div class="archive-detail">
+      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding-bottom:8px; margin-bottom:4px; border-bottom:1px solid #F3F4F1;">
+        <span style="font-size:9px; color:var(--muted); font-weight:600;">KATEGORİ:</span>
+        ${tumKategoriler().map(k => `
+          <button data-action="arsiv-kategori" data-arsiv="${a.id}" data-kategori="${esc(k)}" style="padding:3px 8px; border-radius:999px; border:none; cursor:pointer; font-size:9.5px; font-weight:700; background:${(a.kategori||"Market")===k?'var(--green)':'var(--bg)'}; color:${(a.kategori||"Market")===k?'#fff':'var(--ink)'};">${esc(k)}</button>
+        `).join("")}
+      </div>
+      ${baskaGirdileri.length > 0 ? `
+      <div style="border-radius:8px; padding:8px; margin-bottom:8px; background:rgba(124,92,252,0.04);">
+        <div style="font-size:9px; font-weight:700; color:var(--purple); margin-bottom:4px;">BU ALIŞVERİŞTE BAŞKASI İÇİN</div>
+        ${baskaGirdileri.map(([kisi, tutar]) => `
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-size:10.5px;">${esc(kisi)}</span>
+            <span style="font-size:10.5px; font-weight:700; color:var(--purple); font-family:'Courier New',monospace;">₺${paraFmt(tutar)}</span>
+          </div>
+        `).join("")}
+      </div>` : ""}
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+        <span style="font-size:9px; color:var(--muted); font-weight:600;">ÜRÜNLER</span>
+        <button data-action="arsiv-icerik-az" data-arsiv="${a.id}" style="display:flex; align-items:center; gap:3px; padding:2px 8px; border-radius:999px; border:none; cursor:pointer; font-size:9.5px; font-weight:700; background:${S.icerikSiralamaAZ[a.id]?'var(--green)':'var(--bg)'}; color:${S.icerikSiralamaAZ[a.id]?'#fff':'var(--green)'};">A-Z</button>
+      </div>
+      ${(S.icerikSiralamaAZ[a.id] ? [...a.urunler].sort((x,y) => x.ad.localeCompare(y.ad, "tr")) : a.urunler).map(u => {
+        const dzn = S.arsivDraft && S.arsivDraft.arsivId === a.id && S.arsivDraft.urunId === u.id;
+        if (dzn) {
+          return renderArsivDraftKutusu(S.arsivDraft);
+        }
+        const baskasi = (u.baskasiAdet||0) > 0;
+        const altBilgi = (u.birim === "gram"
+          ? `${miktarFmt(u.miktar)} g · ₺${paraFmt(u.birimFiyati)}/kg`
+          : `${miktarFmt(u.miktar)} adet/koli · ₺${paraFmt(u.birimFiyati)}/adet`) + (u.marketAdi ? ` · ${esc(u.marketAdi)}` : "");
+        return `
+        <div class="archive-item" style="align-items:flex-start;">
+          <div style="min-width:0; padding-right:8px;">
+            <div class="name" style="color:${baskasi?"var(--purple)":"var(--ink)"}; font-weight:600;">
+              ${esc(u.ad)}
+              ${baskasi?`<span class="item-tag tag-baskasi" style="margin-left:4px;">${u.kimIcin?esc(u.kimIcin)+" için":"başkası için"}</span>`:""}
+            </div>
+            <div style="font-size:9.5px; color:var(--muted); margin-top:1px;">${altBilgi}</div>
+          </div>
+          <span style="display:flex; align-items:center; gap:6px; flex-shrink:0; margin-top:1px;">
+            ₺${paraFmt(u.satirToplami)}
+            <button data-action="arsiv-urun-duzenle" data-arsiv="${a.id}" data-urun="${u.id}" style="background:none;border:none;cursor:pointer;">✏️</button>
+            <button data-action="arsiv-urun-sil" data-arsiv="${a.id}" data-urun="${u.id}" style="background:none;border:none;cursor:pointer;">🗑️</button>
+          </span>
+        </div>`;
+      }).join("")}
+      ${yeniEkleniyorMu ? renderArsivDraftKutusu(S.arsivDraft) : `
+      <button data-action="arsiv-urun-ekle-baslat" data-arsiv="${a.id}" style="width:100%; display:flex; align-items:center; justify-content:center; gap:5px; padding:8px; margin-top:6px; border:none; border-radius:8px; background:rgba(31,122,92,0.06); color:var(--green); font-weight:700; font-size:11px; cursor:pointer;">
+        + Bu Alışverişe Ürün Ekle
+      </button>`}
+      <button class="archive-del" data-action="arsiv-sil" data-id="${a.id}">Bu kaydı tamamen sil</button>
+    </div>`;
+}
+
+/* ============ FİŞ TARAMA (sohbet üzerinden yapıştır) ============ */
+function renderScanPanel() {
+  const wrap = document.getElementById("scan-panel-wrap");
+  if (!wrap) return;
+  if (!S.taramaAcik) { wrap.innerHTML = ""; return; }
+
+  if (S.taramaSonuclari.length === 0) {
+    wrap.innerHTML = `
+      <div class="scan-panel">
+        <div class="scan-howto">
+          <b>Nasıl çalışır:</b> Bu uygulama kamerayı doğrudan açamaz.
+          <ol>
+            <li>Fişin fotoğrafını Claude'a (sohbete) gönder</li>
+            <li>"bu fişteki ürünleri JSON olarak çıkar" yaz</li>
+            <li>Claude'un verdiği JSON'u kopyala, aşağıya yapıştır</li>
+          </ol>
+        </div>
+        <textarea id="fis-metin" placeholder='[{"ad":"Tavuk göğsü","fiyat":161.4,"birim":"gram","miktar":850,"kacTane":1}, ...]' style="width:100%; height:80px; font-size:10.5px; padding:8px; border-radius:10px; border:none; outline:none; background:var(--bg); font-family:'Courier New',monospace; resize:none;">${esc(S.fisMetniGecici||"")}</textarea>
+        ${S.taramaHata?`<div style="font-size:11px; color:var(--coral); margin-top:6px;">⚠️ ${esc(S.taramaHata)}</div>`:""}
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button data-action="tarama-kapat" style="flex:1; padding:10px; border:none; border-radius:10px; background:var(--bg); color:var(--ink); font-weight:700; font-size:12px;">Kapat</button>
+          <button data-action="fis-ayristir" style="flex:1; padding:10px; border:none; border-radius:10px; background:var(--purple); color:#fff; font-weight:700; font-size:12px;">Ayrıştır</button>
+        </div>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="scan-panel">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <span style="font-size:12.5px; font-weight:800;">Fişten ${S.taramaSonuclari.length} ürün okundu</span>
+          <span style="font-size:10px; color:var(--muted);">kontrol et, gerekirse düzelt</span>
+        </div>
+        <div style="max-height:340px; overflow-y:auto;">
+          ${S.taramaSonuclari.map(s => `
+            <div class="scan-item ${s.dahil?"included":""}">
+              <div class="scan-item-top">
+                <input type="checkbox" data-action="tarama-dahil" data-gid="${s.gid}" ${s.dahil?"checked":""} />
+                <input type="text" data-action="tarama-alan" data-gid="${s.gid}" data-alan="ad" value="${esc(s.ad)}" />
+              </div>
+              <div class="scan-item-row">
+                <select data-action="tarama-alan" data-gid="${s.gid}" data-alan="birim">
+                  <option value="gram" ${s.birim==="gram"?"selected":""}>gram</option>
+                  <option value="adet" ${s.birim==="adet"?"selected":""}>adet</option>
+                </select>
+                <input type="text" data-action="tarama-alan" data-gid="${s.gid}" data-alan="fiyat" value="${s.fiyat}" style="width:52px;" />
+                <input type="text" data-action="tarama-alan" data-gid="${s.gid}" data-alan="miktar" value="${s.miktar}" style="width:52px;" />
+                <span style="font-size:10px; color:var(--muted);">× ${s.kacTane}</span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button data-action="tarama-kapat" style="flex:1; padding:10px; border:none; border-radius:10px; background:var(--bg); color:var(--ink); font-weight:700; font-size:12px;">İptal</button>
+          <button data-action="tarama-listeye-ekle" style="flex:1; padding:10px; border:none; border-radius:10px; background:var(--purple); color:#fff; font-weight:700; font-size:12px;">${S.taramaSonuclari.filter(s=>s.dahil).length} ürünü listeye ekle</button>
+        </div>
+      </div>`;
+  }
+}
+
+function fisAyristir() {
+  const metin = document.getElementById("fis-metin").value;
+  S.taramaHata = "";
+  try {
+    const temiz = metin.trim().replace(/```json|```/g, "").replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'").trim();
+    const dizi = JSON.parse(temiz);
+    if (!Array.isArray(dizi) || dizi.length === 0) throw new Error("Liste boş veya format hatalı");
+    S.taramaSonuclari = dizi.map((u, i) => ({
+      gid: i,
+      ad: u.ad || "Ürün",
+      birim: u.birim === "adet" ? "adet" : "gram",
+      fiyat: Number(u.fiyat) || 0,
+      miktar: Number(u.miktar) || 1,
+      kacTane: Number(u.kacTane) || 1,
+      dahil: true,
+    }));
+  } catch (e) {
+    S.taramaHata = "Bu metin okunamadı: " + e.message + ". Claude'un verdiği JSON'u eksiksiz yapıştırdığından emin ol.";
+  }
+  render();
+}
+
+function taramaListeyeEkle() {
+  const eklenecekler = S.taramaSonuclari.filter(s => s.dahil && s.ad.trim() && s.fiyat > 0 && s.miktar > 0);
+  if (eklenecekler.length === 0) return;
+  const yeniler = eklenecekler.map((s, i) => ({
+    id: Date.now() + i,
+    ad: s.ad.trim(),
+    birim: s.birim,
+    fiyat: s.fiyat,
+    miktar: s.miktar,
+    kacTane: s.kacTane || 1,
+    birimFiyati: birimFiyatiHesapla(s.fiyat, s.miktar, s.birim),
+    satirToplami: s.fiyat * (s.kacTane || 1),
+    baskasiAdet: 0,
+    kimIcin: "",
+    marketAdi: "",
+  }));
+  S.urunler = [...yeniler, ...S.urunler];
+  urunKaydet();
+  eklenecekler.forEach(s => gecmiseEkle(s.ad.trim()));
+  S.taramaAcik = false;
+  S.taramaSonuclari = [];
+  S.taramaHata = "";
+  render();
+}
+
+/* ============ ALT TOPLAM ÇUBUĞU ============ */
+function renderSticky() {
+  const el = document.getElementById("sticky-wrap");
+  if (S.mod !== "liste" || S.urunler.length === 0) { el.innerHTML = ""; return; }
+  const toplam = S.urunler.reduce((a,u)=>a+u.satirToplami,0);
+  const toplamBaskasi = S.urunler.reduce((a,u)=>a + u.fiyat*(u.baskasiAdet||0), 0);
+  const adetBaskasi = S.urunler.reduce((a,u)=>a + (u.baskasiAdet||0), 0);
+  el.innerHTML = `
+    <div class="sticky-inner">
+      ${toplamBaskasi>0?`
+      <div class="sticky-baska">
+        <span class="sticky-baska-label">👤 Başkası için (${adetBaskasi} adet)</span>
+        <span class="sticky-baska-val">₺${paraFmt(toplamBaskasi)}</span>
+      </div>`:""}
+      <div class="sticky-main">
+        <div>
+          <div class="sticky-total-label">TOPLAM · ${S.urunler.length} kalem</div>
+          <div class="sticky-total-val">₺${paraFmt(toplam)}</div>
+          ${toplamBaskasi>0?`<div class="sticky-self">Kendim: ₺${paraFmt(toplam-toplamBaskasi)}</div>`:""}
+        </div>
+        <div class="sticky-icon">🧺</div>
+      </div>
+    </div>`;
+}
+
+/* ============ OLAY YÖNETİMİ (event delegation) ============ */
+function kkFormTemizle() {
+  S.kkBanka = ""; S.kkKanal = "NFC"; S.kkKategori = "Tümü"; S.kkEsik = ""; S.kkPuan = ""; S.kkTavan = ""; S.kkDuzenleId = null; S.kkKural = "her_cekim";
+}
+
+function kkKaydet() {
+  const banka = (document.getElementById("kk-banka").value || "").trim();
+  const esik = parseFloat((document.getElementById("kk-esik").value || "").replace(",", "."));
+  const puan = parseFloat((document.getElementById("kk-puan").value || "").replace(",", "."));
+  const tavanRaw = parseFloat((document.getElementById("kk-tavan").value || "").replace(",", "."));
+  if (!banka || !(esik > 0) || !(puan > 0)) return;
+  const kayit = { id: S.kkDuzenleId || Date.now(), banka, kanal: S.kkKanal || "NFC", kategori: S.kkKategori || "Tümü", esik, puan, tavan: tavanRaw > 0 ? tavanRaw : null, kural: S.kkKural || "her_cekim" };
+  if (S.kkDuzenleId) {
+    S.kartKampanyalari = S.kartKampanyalari.map(k => k.id === S.kkDuzenleId ? kayit : k);
+  } else {
+    S.kartKampanyalari = [kayit, ...S.kartKampanyalari];
+  }
+  kampanyaKaydet();
+  kkFormTemizle();
+  renderPuan();
+}
+
+function kkDuzenle(id) {
+  const k = S.kartKampanyalari.find(x => x.id === id);
+  if (!k) return;
+  S.kkDuzenleId = id;
+  S.kkBanka = k.banka; S.kkKanal = k.kanal; S.kkKategori = k.kategori || "Tümü"; S.kkKural = k.kural || "her_cekim";
+  S.kkEsik = String(k.esik).replace(".", ","); S.kkPuan = String(k.puan).replace(".", ",");
+  S.kkTavan = k.tavan ? String(k.tavan).replace(".", ",") : "";
+  renderPuan();
+}
+
+function ktFormTemizle() {
+  S.ktAd = ""; S.ktYontem = "her_cekim"; S.ktDuzenleId = null;
+}
+
+function ktKaydet() {
+  const ad = (document.getElementById("kt-ad").value || "").trim();
+  if (!ad) return;
+  const kayit = { id: S.ktDuzenleId || `ozel_${Date.now()}`, ad, yontem: S.ktYontem || "her_cekim" };
+  if (S.ktDuzenleId) {
+    S.kuralTipleri = S.kuralTipleri.map(kt => kt.id === S.ktDuzenleId ? kayit : kt);
+  } else {
+    S.kuralTipleri = [...S.kuralTipleri, kayit];
+  }
+  kuralTipiKaydet();
+  ktFormTemizle();
+  renderPuan();
+}
+
+function ktDuzenle(id) {
+  const kt = S.kuralTipleri.find(x => x.id === id);
+  if (!kt) return;
+  S.ktDuzenleId = id;
+  S.ktAd = kt.ad;
+  S.ktYontem = kt.yontem;
+  renderPuan();
+}
+
+function ktSil(id) {
+  if (S.kuralTipleri.length <= 1) return;
+  const kullaniliyorMu = S.kartKampanyalari.some(k => k.kural === id);
+  if (kullaniliyorMu && !confirm("Bu koşul tipini kullanan kampanyalar var. Yine de silmek istiyor musun? (o kampanyalar 'Her Çekimde' yöntemine döner)")) return;
+  S.kuralTipleri = S.kuralTipleri.filter(kt => kt.id !== id);
+  kuralTipiKaydet();
+  if (S.ktDuzenleId === id) ktFormTemizle();
+  renderPuan();
+}
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-action]");
+  if (!t) return;
+  const action = t.dataset.action;
+  const id = t.dataset.id ? Number(t.dataset.id) : null;
+
+  if (action === "mod") { S.mod = t.dataset.mod; S.acikArsiv = null; render(); }
+  else if (action === "siralaAZ") { S.urunler.sort((a,b)=>a.ad.localeCompare(b.ad,"tr")); urunKaydet(); render(); }
+  else if (action === "temizle") { if (confirm("Tüm liste silinsin mi?")) { S.urunler = []; urunKaydet(); render(); } }
+  else if (action === "birim") {
+    const adDeger = document.getElementById("ad-input").value;
+    const miktarDeger = document.getElementById("miktar-input").value;
+    S.birim = t.dataset.birim;
+    S.girisModu = "toplam";
+    S.kgFiyati = "";
+    render();
+    document.getElementById("ad-input").value = adDeger;
+    document.getElementById("miktar-input").value = miktarDeger;
+    renderPreview();
+  }
+  else if (action === "giris-modu") {
+    const adDeger = document.getElementById("ad-input").value;
+    const miktarDeger = document.getElementById("miktar-input").value;
+    S.girisModu = t.dataset.modu;
+    render();
+    document.getElementById("ad-input").value = adDeger;
+    document.getElementById("miktar-input").value = miktarDeger;
+    renderPreview();
+  }
+  else if (action === "kactane-eksi") { S.kacTane = Math.max(0, S.kacTane-1); document.getElementById("kac-tane-val").textContent = S.kacTane; renderPreview(); renderKacTaneKutusu(); }
+  else if (action === "kactane-arti") { S.kacTane += 1; document.getElementById("kac-tane-val").textContent = S.kacTane; renderPreview(); renderKacTaneKutusu(); }
+  else if (action === "kaydet-urun") { kaydetUrun(); }
+  else if (action === "duzenle-iptal") { formuTemizle(); render(); }
+  else if (action === "duzenle-satir") { duzenle(id); }
+  else if (action === "sil") { sil(id); }
+  else if (action === "yukari") { const i=S.urunler.findIndex(x=>x.id===id); if(i>0){[S.urunler[i-1],S.urunler[i]]=[S.urunler[i],S.urunler[i-1]]; urunKaydet(); render();} }
+  else if (action === "asagi") { const i=S.urunler.findIndex(x=>x.id===id); if(i<S.urunler.length-1){[S.urunler[i],S.urunler[i+1]]=[S.urunler[i+1],S.urunler[i]]; urunKaydet(); render();} }
+  else if (action === "baskasi-arttir") {
+    S.urunler = S.urunler.map(u => u.id===id ? {...u, baskasiAdet: ((u.baskasiAdet||0)+1) % (u.kacTane+1)} : u);
+    urunKaydet(); render();
+  }
+  else if (action === "baska-toggle") { S.baskaAcik = !S.baskaAcik; renderBaska(); }
+  else if (action === "arama-temizle") { S.arama=""; render(); }
+  else if (action === "karsilastirma-arama-temizle") { S.karsilastirmaArama=""; renderGecmis(); }
+  else if (action === "kk-kanal") { S.kkKanal = t.dataset.kanal; renderPuan(); }
+  else if (action === "kk-kategori") { S.kkKategori = t.dataset.kategori; renderPuan(); }
+  else if (action === "kk-kural") { S.kkKural = t.dataset.kural; renderPuan(); }
+  else if (action === "kk-vazgec") { kkFormTemizle(); renderPuan(); }
+  else if (action === "kk-kaydet") { kkKaydet(); }
+  else if (action === "kk-duzenle") { kkDuzenle(id); }
+  else if (action === "kk-sil") { S.kartKampanyalari = S.kartKampanyalari.filter(k=>k.id!==id); kampanyaKaydet(); renderPuan(); }
+  else if (action === "kt-toggle") { S.ktAcik = !S.ktAcik; renderPuan(); }
+  else if (action === "kt-yontem") { S.ktYontem = t.dataset.yontem; renderPuan(); }
+  else if (action === "kt-vazgec") { ktFormTemizle(); renderPuan(); }
+  else if (action === "kt-kaydet") { ktKaydet(); }
+  else if (action === "kt-duzenle") { ktDuzenle(t.dataset.id); }
+  else if (action === "kt-sil") { ktSil(t.dataset.id); }
+  else if (action === "kaydet-panel-ac") { S.kaydetPaneliAcik = true; renderSaveCard(); document.getElementById("alisveris-adi").focus(); }
+  else if (action === "aktif-kategori") {
+    S.alisverisAdiGecici = document.getElementById("alisveris-adi")?.value || "";
+    S.aktifKategori = t.dataset.kategori;
+    renderSaveCard();
+  }
+  else if (action === "kaydet-panel-iptal") { S.kaydetPaneliAcik = false; renderSaveCard(); }
+  else if (action === "alisveris-kaydet") { alisverisiKaydet(); }
+  else if (action === "arsiv-toggle") { S.acikArsiv = S.acikArsiv===id?null:id; S.arsivIsimDuzenle=null; S.arsivDraft=null; renderGecmis(); }
+  else if (action === "arsiv-kategori") { arsivKategoriGuncelle(Number(t.dataset.arsiv), t.dataset.kategori); }
+  else if (action === "arsiv-icerik-az") {
+    const arsivId = Number(t.dataset.arsiv);
+    S.icerikSiralamaAZ = { ...S.icerikSiralamaAZ, [arsivId]: !S.icerikSiralamaAZ[arsivId] };
+    renderGecmis();
+  }
+  else if (action === "karsilastirma-toggle") {
+    S.acikKarsilastirma = S.acikKarsilastirma === t.dataset.ad ? null : t.dataset.ad;
+    renderGecmis();
+  }
+  else if (action === "arsiv-sirala") {
+    S.arsivSiralamaTuru = t.dataset.tur;
+    renderGecmis();
+  }
+  else if (action === "kayittan-duzenle") {
+    kayittanDuzenlemeyeGit(Number(t.dataset.arsiv), Number(t.dataset.urun));
+  }
+  else if (action === "arsiv-sil") { if(confirm("Bu alışveriş tamamen silinsin mi?")){ S.arsiv = S.arsiv.filter(a=>a.id!==id); arsivKaydet(); renderGecmis(); } }
+  else if (action === "arsiv-isim-duzenle") { S.arsivIsimDuzenle = id; renderGecmis(); document.getElementById(`arsiv-isim-input-${id}`)?.focus(); }
+  else if (action === "arsiv-isim-kaydet") {
+    const input = document.getElementById(`arsiv-isim-input-${id}`);
+    const yeni = (input?.value || "").trim();
+    if (yeni) { S.arsiv = S.arsiv.map(a => a.id===id ? {...a, isim: yeni} : a); arsivKaydet(); }
+    S.arsivIsimDuzenle = null;
+    renderGecmis();
+  }
+  else if (action === "arsiv-urun-ekle-baslat") {
+    const arsivId = Number(t.dataset.arsiv);
+    S.arsivDraft = { arsivId, urunId: null, ad: "", birim: "gram", fiyat: "", miktar: "", kacTane: 1, baskasiAdet: 0, kimIcin: "", girisModu: "toplam", kgFiyati: "" };
+    renderGecmis();
+  }
+  else if (action === "arsiv-urun-duzenle") {
+    const arsivId = Number(t.dataset.arsiv), urunId = Number(t.dataset.urun);
+    const a = S.arsiv.find(x=>x.id===arsivId);
+    const u = a && a.urunler.find(x=>x.id===urunId);
+    if (!u) return;
+    S.arsivDraft = {
+      arsivId, urunId,
+      ad: u.ad==="Ürün"?"":u.ad, birim: u.birim,
+      fiyat: String(u.fiyat).replace(".",","), miktar: String(u.miktar).replace(".",","),
+      kacTane: u.kacTane, baskasiAdet: u.baskasiAdet||0, kimIcin: u.kimIcin||"",
+      girisModu: "toplam", kgFiyati: "",
+    };
+    renderGecmis();
+  }
+  else if (action === "arsiv-urun-sil") {
+    const arsivId = Number(t.dataset.arsiv), urunId = Number(t.dataset.urun);
+    S.arsiv = S.arsiv.map(a => a.id===arsivId ? {...a, urunler: a.urunler.filter(u=>u.id!==urunId)} : a);
+    arsivKaydet(); renderGecmis();
+  }
+  else if (action === "arsiv-draft-iptal") { S.arsivDraft = null; renderGecmis(); }
+  else if (action === "arsiv-draft-baska-eksi") { S.arsivDraft.baskasiAdet = Math.max(0, (S.arsivDraft.baskasiAdet||0)-1); renderGecmis(); }
+  else if (action === "arsiv-draft-baska-arti") { S.arsivDraft.baskasiAdet = Math.min(Number(S.arsivDraft.kacTane)||1, (S.arsivDraft.baskasiAdet||0)+1); renderGecmis(); }
+  else if (action === "arsiv-draft-birim") {
+    S.arsivDraft.ad = document.getElementById("arsiv-draft-ad")?.value ?? S.arsivDraft.ad;
+    S.arsivDraft.birim = t.dataset.birim;
+    S.arsivDraft.girisModu = "toplam";
+    S.arsivDraft.fiyat = "";
+    S.arsivDraft.kgFiyati = "";
+    renderGecmis();
+  }
+  else if (action === "arsiv-draft-giris-modu") {
+    S.arsivDraft.ad = document.getElementById("arsiv-draft-ad")?.value ?? S.arsivDraft.ad;
+    S.arsivDraft.girisModu = t.dataset.modu;
+    S.arsivDraft.fiyat = "";
+    S.arsivDraft.kgFiyati = "";
+    renderGecmis();
+  }
+  else if (action === "arsiv-draft-kaydet") {
+    const d = S.arsivDraft;
+    d.ad = document.getElementById("arsiv-draft-ad").value;
+    const fiyatEl = document.getElementById("arsiv-draft-fiyat");
+    if (fiyatEl) d.fiyat = fiyatEl.value;
+    const kgFiyatEl = document.getElementById("arsiv-draft-kgfiyat");
+    if (kgFiyatEl) d.kgFiyati = kgFiyatEl.value;
+    d.miktar = document.getElementById("arsiv-draft-miktar").value;
+    d.kacTane = document.getElementById("arsiv-draft-kactane").value;
+    const kimIcinEl = document.getElementById("arsiv-draft-kimicin");
+    if (kimIcinEl) d.kimIcin = kimIcinEl.value;
+    const fiyatNum = hesaplaArsivDraftFiyat(d);
+    const miktarNum = parseFloat(String(d.miktar).replace(",","."));
+    const kacTaneNum = Number(d.kacTane) || 1;
+    const baskasiAdetNum = Math.min(Number(d.baskasiAdet)||0, kacTaneNum);
+    if (!(fiyatNum>0) || !(miktarNum>0)) { alert("Fiyat ve miktar geçerli olmalı."); return; }
+    const isim = d.ad.trim() || "Ürün";
+    const yeniMi = d.urunId === null || d.urunId === undefined;
+    S.arsiv = S.arsiv.map(a => {
+      if (a.id !== d.arsivId) return a;
+      if (yeniMi) {
+        const yeniUrun = {
+          id: Date.now(), ad: isim, birim: d.birim, fiyat: fiyatNum, miktar: miktarNum, kacTane: kacTaneNum,
+          birimFiyati: birimFiyatiHesapla(fiyatNum, miktarNum, d.birim),
+          satirToplami: fiyatNum * kacTaneNum,
+          baskasiAdet: baskasiAdetNum,
+          kimIcin: baskasiAdetNum > 0 ? (d.kimIcin||"").trim() : "",
+          marketAdi: "",
+        };
+        return { ...a, urunler: [...a.urunler, yeniUrun] };
+      }
+      return {
+        ...a,
+        urunler: a.urunler.map(u => u.id===d.urunId ? {
+          ...u, ad:isim, birim:d.birim, fiyat:fiyatNum, miktar:miktarNum, kacTane:kacTaneNum,
+          birimFiyati: birimFiyatiHesapla(fiyatNum, miktarNum, d.birim),
+          satirToplami: fiyatNum*kacTaneNum,
+          baskasiAdet: baskasiAdetNum,
+          kimIcin: baskasiAdetNum>0 ? (d.kimIcin||"").trim() : "",
+        } : u)
+      };
+    });
+    if (isim !== "Ürün" && !S.urunGecmisi.some(n => n.toLocaleLowerCase("tr") === isim.toLocaleLowerCase("tr"))) {
+      S.urunGecmisi = [isim, ...S.urunGecmisi].slice(0, 200);
+      gecmisKaydet();
+    }
+    arsivKaydet();
+    S.arsivDraft = null;
+    renderGecmis();
+  }
+  else if (action === "tarama-toggle") { S.taramaAcik = !S.taramaAcik; S.taramaSonuclari=[]; S.taramaHata=""; render(); }
+  else if (action === "tarama-kapat") { S.taramaAcik = false; S.taramaSonuclari=[]; S.taramaHata=""; S.fisMetniGecici=""; render(); }
+  else if (action === "fis-ayristir") { fisAyristir(); }
+  else if (action === "tarama-listeye-ekle") { taramaListeyeEkle(); }
+  else if (action === "yedek-toggle") { S.yedekAcik = !S.yedekAcik; render(); }
+  else if (action === "yedek-dosya-indir") {
+    const veri = JSON.stringify({ urunler: S.urunler, urunGecmisi: S.urunGecmisi, arsiv: S.arsiv, kartKampanyalari: S.kartKampanyalari, kuralTipleri: S.kuralTipleri }, null, 2);
+    const blob = new Blob([veri], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `market-listem-yedek-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    document.getElementById("yedek-mesaj").textContent = "Dosya indirildi.";
+  }
+  else if (action === "yedek-dosya-sec") { document.getElementById("yedek-dosya-input").click(); }
+  else if (action === "yedek-kopyala") {
+    const metin = document.getElementById("yedek-metin").value;
+    navigator.clipboard.writeText(metin).then(()=>{ document.getElementById("yedek-mesaj").textContent = "Panoya kopyalandı."; })
+      .catch(()=>{ document.getElementById("yedek-mesaj").textContent = "Otomatik kopyalanamadı, metni elle seç ve kopyala."; });
+  }
+  else if (action === "yedek-iceaktar") { verideniceAktar(document.getElementById("iceaktar-metin").value); }
+  else if (action === "tarama-dahil") { const gid=Number(t.dataset.gid); S.taramaSonuclari = S.taramaSonuclari.map(s=>s.gid===gid?{...s,dahil:!s.dahil}:s); renderScanPanel(); }
+});
+
+document.addEventListener("input", (e) => {
+  if (e.target.id === "arama-input") { S.arama = e.target.value; renderList(); }
+  if (e.target.id === "karsilastirma-arama") {
+    S.karsilastirmaArama = e.target.value;
+    const imlecKonumu = e.target.selectionStart;
+    renderGecmis();
+    const yeniInput = document.getElementById("karsilastirma-arama");
+    if (yeniInput) {
+      yeniInput.focus();
+      yeniInput.setSelectionRange(imlecKonumu, imlecKonumu);
+    }
+  }
+  if (e.target.id === "market-input") { S.marketAdi = e.target.value; }
+  if (e.target.id === "kk-hesap-tutari") {
+    S.kkHesapTutari = e.target.value;
+    document.getElementById("kk-simulasyon-sonuc").innerHTML = renderSimulasyonIcerik(kkSimulasyon());
+  }
+  if (e.target.id === "kk-banka") S.kkBanka = e.target.value;
+  if (e.target.id === "kk-esik") S.kkEsik = e.target.value;
+  if (e.target.id === "kk-puan") S.kkPuan = e.target.value;
+  if (e.target.id === "kk-tavan") S.kkTavan = e.target.value;
+  if (e.target.id === "kk-kategori-input") S.kkKategori = e.target.value;
+  if (e.target.id === "kt-ad") S.ktAd = e.target.value;
+  if (S.arsivDraft && ["arsiv-draft-fiyat","arsiv-draft-kgfiyat","arsiv-draft-miktar","arsiv-draft-kactane"].includes(e.target.id)) {
+    if (e.target.id === "arsiv-draft-fiyat") S.arsivDraft.fiyat = e.target.value;
+    if (e.target.id === "arsiv-draft-kgfiyat") S.arsivDraft.kgFiyati = e.target.value;
+    if (e.target.id === "arsiv-draft-miktar") S.arsivDraft.miktar = e.target.value;
+    if (e.target.id === "arsiv-draft-kactane") S.arsivDraft.kacTane = e.target.value;
+    const onizleme = document.getElementById("arsiv-draft-onizleme");
+    if (onizleme) {
+      const girisModu = S.arsivDraft.girisModu || "toplam";
+      const kgModu = S.arsivDraft.birim === "gram" && girisModu === "birimFiyati";
+      const hesaplananFiyat = hesaplaArsivDraftFiyat(S.arsivDraft);
+      onizleme.textContent = `Hesaplanan ${kgModu?"toplam fiyat":"adet fiyatı"}: ${hesaplananFiyat>0?`₺${paraFmt(hesaplananFiyat)}`:"—"}`;
+    }
+  }
+  if (e.target.dataset && e.target.dataset.action === "kimicin") {
+    const id = Number(e.target.dataset.id);
+    S.urunler = S.urunler.map(u => u.id===id ? {...u, kimIcin: e.target.value} : u);
+  }
+  if (e.target.dataset && e.target.dataset.action === "tarama-alan") {
+    const gid = Number(e.target.dataset.gid), alan = e.target.dataset.alan;
+    let deger = e.target.value;
+    if (alan === "fiyat" || alan === "miktar") deger = parseFloat(deger.replace(",", ".")) || 0;
+    S.taramaSonuclari = S.taramaSonuclari.map(s => s.gid===gid ? {...s, [alan]: deger} : s);
+  }
+  if (e.target.id === "fis-metin") { S.fisMetniGecici = e.target.value; }
+  if (e.target.id === "alisveris-adi") { S.alisverisAdiGecici = e.target.value; }
+  if (e.target.id === "aktif-kategori-input") { S.aktifKategori = e.target.value; }
+});
+
+document.addEventListener("change", (e) => {
+  if (e.target.dataset && e.target.dataset.action === "kimicin") { urunKaydet(); }
+  if (e.target.id === "yedek-dosya-input" && e.target.files && e.target.files[0]) {
+    const dosya = e.target.files[0];
+    const okuyucu = new FileReader();
+    okuyucu.onload = () => verideniceAktar(String(okuyucu.result));
+    okuyucu.onerror = () => { document.getElementById("yedek-mesaj").textContent = "Dosya okunamadı."; };
+    okuyucu.readAsText(dosya);
+    e.target.value = "";
+  }
+});
+
+function verideniceAktar(metinHam) {
+  const mesajEl = document.getElementById("yedek-mesaj");
+  try {
+    const temiz = metinHam.trim().replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
+    const obj = JSON.parse(temiz);
+    if (!Array.isArray(obj.urunler)) throw new Error("'urunler' listesi bulunamadı — geçerli bir yedek değil");
+    S.urunler = obj.urunler; urunKaydet();
+    if (Array.isArray(obj.urunGecmisi)) { S.urunGecmisi = obj.urunGecmisi; gecmisKaydet(); }
+    if (Array.isArray(obj.arsiv)) { S.arsiv = obj.arsiv; arsivKaydet(); }
+    else if (Array.isArray(obj.gecmisAlisverisler)) { S.arsiv = obj.gecmisAlisverisler; arsivKaydet(); }
+    if (Array.isArray(obj.kartKampanyalari)) { S.kartKampanyalari = obj.kartKampanyalari; kampanyaKaydet(); }
+    if (Array.isArray(obj.kuralTipleri) && obj.kuralTipleri.length > 0) { S.kuralTipleri = obj.kuralTipleri; kuralTipiKaydet(); }
+    S.yedekAcik = true;
+    render();
+    document.getElementById("yedek-mesaj").textContent = `${obj.urunler.length} ürün, ${(obj.arsiv||obj.gecmisAlisverisler||[]).length} alışveriş geri yüklendi.`;
+  } catch (e) {
+    mesajEl.textContent = `Okunamadı: ${e.message}`;
+  }
+}
+
+/* ============ BAŞLAT ============ */
+render();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
