@@ -17,8 +17,8 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{margin:0; background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,sans-serif; color:var(--ink);}
-  .wrap{max-width:420px; margin:0 auto; padding-bottom:120px; min-height:100vh;}
-  .header{display:flex; align-items:center; justify-content:space-between; padding:26px 20px 10px;}
+  .wrap{max-width:420px; margin:0 auto; padding-bottom:calc(120px + env(safe-area-inset-bottom, 0px)); min-height:100vh;}
+  .header{display:flex; align-items:center; justify-content:space-between; padding:calc(26px + env(safe-area-inset-top, 0px)) 20px 10px;}
   .header-left{display:flex; align-items:center; gap:10px;}
   .logo{width:40px; height:40px; border-radius:16px; background:var(--green); display:flex; align-items:center; justify-content:center; font-size:19px;}
   h1{font-size:17px; margin:0; font-weight:700;}
@@ -103,7 +103,7 @@
   .btn-cancel{background:var(--bg); color:var(--muted);}
   .btn-confirm{background:var(--green); color:#fff;}
   .sticky{position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center;}
-  .sticky-inner{width:100%; max-width:420px; padding:16px 20px; background:var(--ink);}
+  .sticky-inner{width:100%; max-width:420px; padding:16px 20px calc(16px + env(safe-area-inset-bottom, 0px)); background:var(--ink);}
   .sticky-baska{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.12);}
   .sticky-baska-label{font-size:11px; color:rgba(255,255,255,0.7); font-weight:600;}
   .sticky-baska-val{font-size:13px; font-weight:700; color:var(--purple); font-family:'Courier New',monospace;}
@@ -217,7 +217,7 @@ let S = {
   mod: "liste",
   birim: "gram",
   kacTane: 1,
-  girisModu: "toplam", // "toplam" | "kgFiyati" (sadece gram modunda)
+  girisModu: "toplam", // "toplam" | "birimFiyati" (gramda kg fiyatı, adette adet fiyatı)
   kgFiyati: "",
   baskaAcik: false,
   kaydetPaneliAcik: false,
@@ -263,6 +263,18 @@ function arsivSiraTarihi(a) {
 }
 const miktarFmt = (n) => (n || 0).toLocaleString("tr-TR", { maximumFractionDigits: 0 });
 const esc = (s) => (s || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function yerelGunAnahtari(t) {
+  const d = new Date(t);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+// Kaç tane alanını okur: 0 geçerli bir değerdir ("almadım"), boş/geçersizse 1 kabul edilir.
+function kacTaneOku(deger) {
+  const n = parseInt(String(deger ?? "").trim(), 10);
+  return Number.isFinite(n) && n >= 0 ? n : 1;
+}
+// Kayıtlı bir ürünü forma geri doldururken hangi giriş modunun kullanılacağı.
+// Kayıttaki "fiyat" tek bir paketin/koli­nin fiyatıdır; adet modunda bu "adet fiyatı" kutusuna karşılık gelir.
+const doldurmaModu = (birim) => birim === "adet" ? "birimFiyati" : "toplam";
 const bugununAdi = () => new Date().toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
 
 function birimFiyatiHesapla(fiyat, miktar, birim) {
@@ -369,7 +381,7 @@ function hesaplaKampanyaPuani(k, islemlerHam) {
   } else {
     const gunler = {};
     islemler.forEach(isl => {
-      const key = isl.tarih.toISOString().slice(0,10);
+      const key = yerelGunAnahtari(isl.tarih);
       if (!gunler[key]) gunler[key] = [];
       gunler[key].push(isl);
     });
@@ -602,7 +614,7 @@ function bindForm() {
     if (kayit && adInput.value.trim().toLocaleLowerCase("tr") === kayit.ad.toLocaleLowerCase("tr")) {
       const adDeger = adInput.value;
       S.birim = kayit.birim;
-      S.girisModu = "toplam";
+      S.girisModu = doldurmaModu(kayit.birim);
       S.kgFiyati = "";
       render();
       document.getElementById("ad-input").value = adDeger;
@@ -628,7 +640,8 @@ function formDegerleri() {
     fiyat = (kgFiyatiNum > 0 && miktar > 0) ? (kgFiyatiNum * miktar) / 1000 : NaN;
   } else if (adetToplamModuAktif) {
     const girilenFiyatNum = parseFloat((document.getElementById("fiyat-input")?.value || "").replace(",", "."));
-    fiyat = (girilenFiyatNum > 0 && S.kacTane > 0) ? girilenFiyatNum / S.kacTane : NaN;
+    // Kaç tane 0 ise ("almadım") girilen tutar tek bir adedin fiyatı olarak alınır.
+    fiyat = girilenFiyatNum > 0 ? girilenFiyatNum / Math.max(S.kacTane, 1) : NaN;
   } else {
     fiyat = parseFloat((document.getElementById("fiyat-input")?.value || "").replace(",", "."));
   }
@@ -751,7 +764,7 @@ function duzenle(id) {
   S.editingId = id;
   S.birim = u.birim;
   S.kacTane = u.kacTane;
-  S.girisModu = "toplam";
+  S.girisModu = doldurmaModu(u.birim);
   S.kgFiyati = "";
   S.marketAdi = u.marketAdi || "";
   render();
@@ -900,7 +913,7 @@ function kayittanDuzenlemeyeGit(arsivId, urunId) {
     ad: u.ad === "Ürün" ? "" : (u.ad || ""), birim: u.birim,
     fiyat: String(u.fiyat).replace(".", ","), miktar: String(u.miktar).replace(".", ","),
     kacTane: u.kacTane, baskasiAdet: u.baskasiAdet || 0, kimIcin: u.kimIcin || "",
-    girisModu: "toplam", kgFiyati: "",
+    girisModu: doldurmaModu(u.birim), kgFiyati: "",
   };
   renderGecmis();
   setTimeout(() => {
@@ -1020,12 +1033,15 @@ function renderGecmis() {
       return `
       <div class="archive-row" id="arsiv-kayit-${a.id}">
         <div class="archive-head">
-          <button class="archive-name-wrap" data-action="arsiv-toggle" data-id="${a.id}">
-            ${S.arsivIsimDuzenle === a.id
-              ? `<input class="archive-name-input" id="arsiv-isim-input-${a.id}" value="${esc(a.isim)}" onclick="event.stopPropagation()" />`
-              : `<div class="archive-name">${esc(a.isim)}</div>`}
+          ${S.arsivIsimDuzenle === a.id ? `
+          <div class="archive-name-wrap">
+            <input class="archive-name-input" id="arsiv-isim-input-${a.id}" data-arsiv-isim="${a.id}" value="${esc(a.isim)}" enterkeyhint="done" />
             <div class="archive-count">${a.urunler.length} kalem${a.kategori ? ` · ${esc(a.kategori)}` : ""}</div>
-          </button>
+          </div>` : `
+          <button class="archive-name-wrap" data-action="arsiv-toggle" data-id="${a.id}">
+            <div class="archive-name">${esc(a.isim)}</div>
+            <div class="archive-count">${a.urunler.length} kalem${a.kategori ? ` · ${esc(a.kategori)}` : ""}</div>
+          </button>`}
           <div style="display:flex; align-items:center; gap:8px;">
             ${acik && S.arsivIsimDuzenle !== a.id ? `<button data-action="arsiv-isim-duzenle" data-id="${a.id}" style="background:none;border:none;cursor:pointer;">✏️</button>` : ""}
             ${S.arsivIsimDuzenle === a.id ? `<button data-action="arsiv-isim-kaydet" data-id="${a.id}" style="background:none;border:none;cursor:pointer; color:var(--green); font-size:11px; font-weight:700;">Kaydet</button>` : ""}
@@ -1208,7 +1224,7 @@ function renderSimulasyonIcerik(simulasyon) {
 function hesaplaArsivDraftFiyat(d) {
   if (!d) return NaN;
   const girisModu = d.girisModu || "toplam";
-  const kacTaneNum = Number(d.kacTane) || 1;
+  const kacTaneNum = Math.max(kacTaneOku(d.kacTane), 1);
   const miktarNum = parseFloat(String(d.miktar).replace(",", "."));
   if (d.birim === "gram" && girisModu === "birimFiyati") {
     const kgFiyatiNum = parseFloat(String(d.kgFiyati || "").replace(",", "."));
@@ -1216,7 +1232,7 @@ function hesaplaArsivDraftFiyat(d) {
   }
   if (d.birim === "adet" && girisModu === "toplam") {
     const girilenNum = parseFloat(String(d.fiyat).replace(",", "."));
-    return girilenNum > 0 && kacTaneNum > 0 ? girilenNum / kacTaneNum : NaN;
+    return girilenNum > 0 ? girilenNum / kacTaneNum : NaN;
   }
   return parseFloat(String(d.fiyat).replace(",", "."));
 }
@@ -1371,7 +1387,7 @@ function renderScanPanel() {
                   <option value="adet" ${s.birim==="adet"?"selected":""}>adet</option>
                 </select>
                 <input type="text" data-action="tarama-alan" data-gid="${s.gid}" data-alan="fiyat" value="${s.fiyat}" style="width:52px;" />
-                <input type="text" data-action="tarama-alan" data-gid="${s.gid}" data-alan="miktar" value="${s.miktar}" style="width:52px;" />
+                <input type="text" data-action="tarama-alan" data-gid="${s.gid}" data-alan="miktar" value="${s.miktar || ""}" placeholder="${s.birim==="gram"?"gram?":"adet?"}" style="width:52px;${s.miktar>0?"":" outline:1px solid var(--coral);"}" />
                 <span style="font-size:10px; color:var(--muted);">× ${s.kacTane}</span>
               </div>
             </div>
@@ -1392,15 +1408,19 @@ function fisAyristir() {
     const temiz = metin.trim().replace(/```json|```/g, "").replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'").trim();
     const dizi = JSON.parse(temiz);
     if (!Array.isArray(dizi) || dizi.length === 0) throw new Error("Liste boş veya format hatalı");
-    S.taramaSonuclari = dizi.map((u, i) => ({
-      gid: i,
-      ad: u.ad || "Ürün",
-      birim: u.birim === "adet" ? "adet" : "gram",
-      fiyat: Number(u.fiyat) || 0,
-      miktar: Number(u.miktar) || 1,
-      kacTane: Number(u.kacTane) || 1,
-      dahil: true,
-    }));
+    S.taramaSonuclari = dizi.map((u, i) => {
+      const birim = u.birim === "adet" ? "adet" : "gram";
+      const fiyat = Number(String(u.fiyat ?? "").replace(",", ".")) || 0;
+      // Gramaj yoksa 1 gram varsaymak absürt kg fiyatı üretir; boş bırakıp işaretsiz getiriyoruz.
+      const miktar = Number(String(u.miktar ?? "").replace(",", ".")) || (birim === "adet" ? 1 : 0);
+      return {
+        gid: i,
+        ad: u.ad || "Ürün",
+        birim, fiyat, miktar,
+        kacTane: Number(u.kacTane) || 1,
+        dahil: fiyat > 0 && miktar > 0,
+      };
+    });
   } catch (e) {
     S.taramaHata = "Bu metin okunamadı: " + e.message + ". Claude'un verdiği JSON'u eksiksiz yapıştırdığından emin ol.";
   }
@@ -1534,7 +1554,7 @@ document.addEventListener("click", (e) => {
 
   if (action === "mod") { S.mod = t.dataset.mod; S.acikArsiv = null; render(); }
   else if (action === "siralaAZ") { S.urunler.sort((a,b)=>a.ad.localeCompare(b.ad,"tr")); urunKaydet(); render(); }
-  else if (action === "temizle") { if (confirm("Tüm liste silinsin mi?")) { S.urunler = []; urunKaydet(); render(); } }
+  else if (action === "temizle") { if (confirm("Tüm liste silinsin mi?")) { S.urunler = []; formuTemizle(); urunKaydet(); render(); } }
   else if (action === "birim") {
     const adDeger = document.getElementById("ad-input").value;
     const miktarDeger = document.getElementById("miktar-input").value;
@@ -1633,7 +1653,7 @@ document.addEventListener("click", (e) => {
       ad: u.ad==="Ürün"?"":u.ad, birim: u.birim,
       fiyat: String(u.fiyat).replace(".",","), miktar: String(u.miktar).replace(".",","),
       kacTane: u.kacTane, baskasiAdet: u.baskasiAdet||0, kimIcin: u.kimIcin||"",
-      girisModu: "toplam", kgFiyati: "",
+      girisModu: doldurmaModu(u.birim), kgFiyati: "",
     };
     renderGecmis();
   }
@@ -1644,7 +1664,7 @@ document.addEventListener("click", (e) => {
   }
   else if (action === "arsiv-draft-iptal") { S.arsivDraft = null; renderGecmis(); }
   else if (action === "arsiv-draft-baska-eksi") { S.arsivDraft.baskasiAdet = Math.max(0, (S.arsivDraft.baskasiAdet||0)-1); renderGecmis(); }
-  else if (action === "arsiv-draft-baska-arti") { S.arsivDraft.baskasiAdet = Math.min(Number(S.arsivDraft.kacTane)||1, (S.arsivDraft.baskasiAdet||0)+1); renderGecmis(); }
+  else if (action === "arsiv-draft-baska-arti") { S.arsivDraft.baskasiAdet = Math.min(kacTaneOku(S.arsivDraft.kacTane), (S.arsivDraft.baskasiAdet||0)+1); renderGecmis(); }
   else if (action === "arsiv-draft-birim") {
     S.arsivDraft.ad = document.getElementById("arsiv-draft-ad")?.value ?? S.arsivDraft.ad;
     S.arsivDraft.birim = t.dataset.birim;
@@ -1673,7 +1693,7 @@ document.addEventListener("click", (e) => {
     if (kimIcinEl) d.kimIcin = kimIcinEl.value;
     const fiyatNum = hesaplaArsivDraftFiyat(d);
     const miktarNum = parseFloat(String(d.miktar).replace(",","."));
-    const kacTaneNum = Number(d.kacTane) || 1;
+    const kacTaneNum = kacTaneOku(d.kacTane);
     const baskasiAdetNum = Math.min(Number(d.baskasiAdet)||0, kacTaneNum);
     if (!(fiyatNum>0) || !(miktarNum>0)) { alert("Fiyat ve miktar geçerli olmalı."); return; }
     const isim = d.ad.trim() || "Ürün";
@@ -1758,6 +1778,8 @@ document.addEventListener("input", (e) => {
   if (e.target.id === "kk-tavan") S.kkTavan = e.target.value;
   if (e.target.id === "kk-kategori-input") S.kkKategori = e.target.value;
   if (e.target.id === "kt-ad") S.ktAd = e.target.value;
+  if (S.arsivDraft && e.target.id === "arsiv-draft-ad") S.arsivDraft.ad = e.target.value;
+  if (S.arsivDraft && e.target.id === "arsiv-draft-kimicin") S.arsivDraft.kimIcin = e.target.value;
   if (S.arsivDraft && ["arsiv-draft-fiyat","arsiv-draft-kgfiyat","arsiv-draft-miktar","arsiv-draft-kactane"].includes(e.target.id)) {
     if (e.target.id === "arsiv-draft-fiyat") S.arsivDraft.fiyat = e.target.value;
     if (e.target.id === "arsiv-draft-kgfiyat") S.arsivDraft.kgFiyati = e.target.value;
@@ -1784,6 +1806,13 @@ document.addEventListener("input", (e) => {
   if (e.target.id === "fis-metin") { S.fisMetniGecici = e.target.value; }
   if (e.target.id === "alisveris-adi") { S.alisverisAdiGecici = e.target.value; }
   if (e.target.id === "aktif-kategori-input") { S.aktifKategori = e.target.value; }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.dataset && e.target.dataset.arsivIsim) {
+    e.preventDefault();
+    document.querySelector(`[data-action="arsiv-isim-kaydet"][data-id="${e.target.dataset.arsivIsim}"]`)?.click();
+  }
 });
 
 document.addEventListener("change", (e) => {

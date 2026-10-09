@@ -1,4 +1,4 @@
-const CACHE_ADI = "market-listem-v2";
+const CACHE_ADI = "market-listem-v3";
 const DOSYALAR = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -8,11 +8,12 @@ self.addEventListener("install", (e) => {
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((anahtarlar) =>
-      Promise.all(anahtarlar.filter((k) => k !== CACHE_ADI).map((k) => caches.delete(k)))
-    )
+    caches.keys()
+      .then((anahtarlar) =>
+        Promise.all(anahtarlar.filter((k) => k !== CACHE_ADI).map((k) => caches.delete(k)))
+      )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // Önce ağdan (internetten) en güncel dosyayı almayı dener; başarılı olursa hem
@@ -20,13 +21,26 @@ self.addEventListener("activate", (e) => {
 // yoksa (çevrimdışıyken) önbellekteki son bilinen sürümü kullanır. Böylece
 // yeni bir yükleme yaptığında kullanıcı artık eski sürümde takılı kalmaz.
 self.addEventListener("fetch", (e) => {
+  const istek = e.request;
+  // Sadece kendi sitemizdeki GET isteklerini yönetiyoruz; gerisi tarayıcıya kalır.
+  if (istek.method !== "GET" || new URL(istek.url).origin !== self.location.origin) return;
+
   e.respondWith(
-    fetch(e.request)
+    fetch(istek)
       .then((yanit) => {
-        const kopya = yanit.clone();
-        caches.open(CACHE_ADI).then((cache) => cache.put(e.request, kopya));
+        // Sadece başarılı yanıtları önbelleğe al (404 / hata sayfaları saklanmasın).
+        if (yanit && yanit.ok) {
+          const kopya = yanit.clone();
+          e.waitUntil(caches.open(CACHE_ADI).then((cache) => cache.put(istek, kopya)));
+        }
         return yanit;
       })
-      .catch(() => caches.match(e.request))
+      .catch(async () => {
+        const onbellek = await caches.match(istek, { ignoreSearch: true });
+        if (onbellek) return onbellek;
+        // Çevrimdışıyken sayfa açılıyorsa (adres farklı olsa bile) uygulamanın kendisini göster.
+        if (istek.mode === "navigate") return caches.match("./index.html");
+        return Response.error();
+      })
   );
 });
