@@ -1,4 +1,4 @@
-const CACHE_ADI = "market-listem-v3";
+const CACHE_ADI = "market-listem-v4";
 const DOSYALAR = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {
