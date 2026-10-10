@@ -167,6 +167,17 @@
 </head>
 <body>
 <div id="app"></div>
+<script>
+/* Ana kod hiç çalışamazsa (ör. çok eski tarayıcı) boş sayfa yerine sebebini göster. */
+window.addEventListener("error", function (e) {
+  var a = document.getElementById("app");
+  if (a && !a.innerHTML.replace(/\s/g, "")) {
+    a.innerHTML = '<div style="max-width:420px;margin:0 auto;padding:40px 20px;font-family:sans-serif;color:#16241C">' +
+      '<b>Market Listem açılamadı.</b><br><small style="color:#7C8A82">' +
+      String(e.message || "Bilinmeyen hata").replace(/[<>&]/g, "") + '</small></div>';
+  }
+});
+</script>
 
 <script>
 /* ============ VERİ / DEPOLAMA (localStorage — kalıcı ve güvenilir) ============ */
@@ -189,20 +200,75 @@ const VARSAYILAN_KURAL_TIPLERI = [
 ];
 
 function yukle(anahtar, varsayilan) {
-  try { const v = localStorage.getItem(anahtar); return v ? JSON.parse(v) : varsayilan; }
-  catch (e) { return varsayilan; }
+  try {
+    const v = localStorage.getItem(anahtar);
+    if (!v) return varsayilan;
+    const deger = JSON.parse(v);
+    // Beklenen tip liste ise ama kayıtlı veri liste değilse (bozuk / başka bir sürümden kalma) varsayılanı kullan.
+    if (Array.isArray(varsayilan) && !Array.isArray(deger)) return varsayilan;
+    return deger;
+  } catch (e) { return varsayilan; }
+}
+
+/* ---- Kayıtlı veriyi onar: eksik/bozuk alanlar uygulamayı çökertmesin ---- */
+function sayi(x, varsayilan = 0) { const n = Number(x); return Number.isFinite(n) ? n : varsayilan; }
+function urunOnar(u, i) {
+  if (!u || typeof u !== "object") return null;
+  const birim = u.birim === "adet" ? "adet" : "gram";
+  const fiyat = sayi(u.fiyat), miktar = sayi(u.miktar), kacTane = Math.max(0, Math.round(sayi(u.kacTane, 1)));
+  const bf = (fiyat > 0 && miktar > 0) ? (birim === "gram" ? (fiyat / miktar) * 1000 : fiyat / miktar) : 0;
+  return {
+    ...u,
+    id: sayi(u.id, Date.now() + i),
+    ad: (typeof u.ad === "string" && u.ad.trim()) ? u.ad : "Ürün",
+    birim, fiyat, miktar, kacTane,
+    birimFiyati: sayi(u.birimFiyati, bf) || bf,
+    satirToplami: sayi(u.satirToplami, fiyat * kacTane),
+    baskasiAdet: Math.min(Math.max(0, sayi(u.baskasiAdet)), kacTane),
+    kimIcin: typeof u.kimIcin === "string" ? u.kimIcin : "",
+    marketAdi: typeof u.marketAdi === "string" ? u.marketAdi : "",
+  };
+}
+function urunListesiOnar(liste) { return (Array.isArray(liste) ? liste : []).map(urunOnar).filter(Boolean); }
+function arsivOnar(liste) {
+  return (Array.isArray(liste) ? liste : []).filter(a => a && typeof a === "object").map((a, i) => {
+    const t = new Date(a.tarih);
+    return {
+      ...a,
+      id: sayi(a.id, Date.now() + i),
+      isim: (typeof a.isim === "string" && a.isim.trim()) ? a.isim : "Alışveriş",
+      tarih: isNaN(t) ? new Date().toISOString() : t.toISOString(),
+      urunler: urunListesiOnar(a.urunler),
+      kategori: (typeof a.kategori === "string" && a.kategori) ? a.kategori : "Market",
+    };
+  });
+}
+function gecmisOnar(liste) { return (Array.isArray(liste) ? liste : []).filter(n => typeof n === "string" && n.trim()); }
+function kampanyaOnar(liste) {
+  return (Array.isArray(liste) ? liste : []).filter(k => k && typeof k === "object" && sayi(k.esik) > 0).map((k, i) => ({
+    ...k,
+    id: sayi(k.id, Date.now() + i),
+    banka: typeof k.banka === "string" ? k.banka : "Kart",
+    kanal: typeof k.kanal === "string" ? k.kanal : "NFC",
+    esik: sayi(k.esik), puan: sayi(k.puan),
+    tavan: sayi(k.tavan) > 0 ? sayi(k.tavan) : null,
+  }));
+}
+function kuralTipiOnar(liste) {
+  const temiz = (Array.isArray(liste) ? liste : []).filter(kt => kt && typeof kt === "object" && kt.id && typeof kt.ad === "string");
+  return temiz.length > 0 ? temiz : null;
 }
 function kaydet(anahtar, deger) {
   try { localStorage.setItem(anahtar, JSON.stringify(deger)); } catch (e) {}
 }
 
 let S = {
-  urunler: yukle(K_URUNLER, []),
-  urunGecmisi: yukle(K_GECMISI, []),
+  urunler: urunListesiOnar(yukle(K_URUNLER, [])),
+  urunGecmisi: gecmisOnar(yukle(K_GECMISI, [])),
   marketAdi: "",
-  arsiv: yukle(K_ARSIV, []),
-  kartKampanyalari: yukle(K_KAMPANYA, []),
-  kuralTipleri: (() => { const y = yukle(K_KURALTIP, null); return (Array.isArray(y) && y.length > 0) ? y : VARSAYILAN_KURAL_TIPLERI; })(),
+  arsiv: arsivOnar(yukle(K_ARSIV, [])),
+  kartKampanyalari: kampanyaOnar(yukle(K_KAMPANYA, [])),
+  kuralTipleri: kuralTipiOnar(yukle(K_KURALTIP, null)) || VARSAYILAN_KURAL_TIPLERI,
   ktAcik: false,
   ktAd: "",
   ktYontem: "her_cekim",
@@ -1833,12 +1899,12 @@ function verideniceAktar(metinHam) {
     const temiz = metinHam.trim().replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
     const obj = JSON.parse(temiz);
     if (!Array.isArray(obj.urunler)) throw new Error("'urunler' listesi bulunamadı — geçerli bir yedek değil");
-    S.urunler = obj.urunler; urunKaydet();
-    if (Array.isArray(obj.urunGecmisi)) { S.urunGecmisi = obj.urunGecmisi; gecmisKaydet(); }
-    if (Array.isArray(obj.arsiv)) { S.arsiv = obj.arsiv; arsivKaydet(); }
-    else if (Array.isArray(obj.gecmisAlisverisler)) { S.arsiv = obj.gecmisAlisverisler; arsivKaydet(); }
-    if (Array.isArray(obj.kartKampanyalari)) { S.kartKampanyalari = obj.kartKampanyalari; kampanyaKaydet(); }
-    if (Array.isArray(obj.kuralTipleri) && obj.kuralTipleri.length > 0) { S.kuralTipleri = obj.kuralTipleri; kuralTipiKaydet(); }
+    S.urunler = urunListesiOnar(obj.urunler); urunKaydet();
+    if (Array.isArray(obj.urunGecmisi)) { S.urunGecmisi = gecmisOnar(obj.urunGecmisi); gecmisKaydet(); }
+    if (Array.isArray(obj.arsiv)) { S.arsiv = arsivOnar(obj.arsiv); arsivKaydet(); }
+    else if (Array.isArray(obj.gecmisAlisverisler)) { S.arsiv = arsivOnar(obj.gecmisAlisverisler); arsivKaydet(); }
+    if (Array.isArray(obj.kartKampanyalari)) { S.kartKampanyalari = kampanyaOnar(obj.kartKampanyalari); kampanyaKaydet(); }
+    if (Array.isArray(obj.kuralTipleri) && obj.kuralTipleri.length > 0) { S.kuralTipleri = kuralTipiOnar(obj.kuralTipleri) || VARSAYILAN_KURAL_TIPLERI; kuralTipiKaydet(); }
     S.yedekAcik = true;
     render();
     document.getElementById("yedek-mesaj").textContent = `${obj.urunler.length} ürün, ${(obj.arsiv||obj.gecmisAlisverisler||[]).length} alışveriş geri yüklendi.`;
@@ -1848,7 +1914,36 @@ function verideniceAktar(metinHam) {
 }
 
 /* ============ BAŞLAT ============ */
-render();
+function hataEkrani(hata) {
+  const app = document.getElementById("app");
+  if (!app || app.dataset.hata) return;
+  app.dataset.hata = "1";
+  const mesaj = (hata && (hata.stack || hata.message)) || String(hata);
+  app.innerHTML = `
+    <div style="max-width:420px; margin:0 auto; padding:calc(30px + env(safe-area-inset-top, 0px)) 20px 40px;">
+      <h1 style="font-size:17px;">Market Listem açılırken bir hata oluştu</h1>
+      <p style="font-size:12px; color:var(--muted);">Verilerin silinmedi. Aşağıdaki hata metnini kopyalayıp gönderirsen sorunu bulabiliriz.</p>
+      <textarea readonly style="width:100%; height:140px; font-size:10px; font-family:'Courier New',monospace; border:none; border-radius:10px; padding:8px; background:#fff;">${esc(mesaj)}</textarea>
+      <button id="hata-yedek" style="width:100%; margin-top:10px; padding:12px; border:none; border-radius:12px; background:var(--green); color:#fff; font-weight:700;">⬇ Ham verileri yedek olarak indir</button>
+      <button id="hata-yenile" style="width:100%; margin-top:8px; padding:12px; border:none; border-radius:12px; background:var(--ink); color:#fff; font-weight:700;">↻ Sayfayı yenile</button>
+    </div>`;
+  document.getElementById("hata-yenile").onclick = () => location.reload();
+  document.getElementById("hata-yedek").onclick = () => {
+    const ham = {};
+    try { [K_URUNLER, K_GECMISI, K_ARSIV, K_KAMPANYA, K_KURALTIP].forEach(k => { ham[k] = localStorage.getItem(k); }); } catch (e) {}
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(ham, null, 2)], { type: "application/json" }));
+    a.download = "market-listem-ham-veri.json";
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+}
+
+try {
+  render();
+} catch (hata) {
+  console.error(hata);
+  hataEkrani(hata);
+}
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
