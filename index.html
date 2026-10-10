@@ -102,6 +102,9 @@
   .save-panel .actions button{flex:1; padding:9px; border:none; border-radius:10px; font-size:11.5px; font-weight:700; cursor:pointer;}
   .btn-cancel{background:var(--bg); color:var(--muted);}
   .btn-confirm{background:var(--green); color:#fff;}
+  .yukari-btn{position:fixed; z-index:50; right:max(16px, calc((100vw - 420px) / 2 + 16px)); bottom:calc(24px + env(safe-area-inset-bottom, 0px)); width:46px; height:46px; border-radius:999px; border:none; background:var(--ink); color:#fff; font-size:20px; font-weight:800; line-height:1; cursor:pointer; box-shadow:0 6px 18px rgba(22,36,28,0.28); display:flex; align-items:center; justify-content:center; opacity:0; transform:translateY(12px); pointer-events:none; transition:opacity .2s, transform .2s; -webkit-tap-highlight-color:transparent;}
+  .yukari-btn.gorunur{opacity:1; transform:translateY(0); pointer-events:auto;}
+  .yukari-btn:active{transform:scale(0.92);}
   .sticky{position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center;}
   .sticky-inner{width:100%; max-width:420px; padding:16px 20px calc(16px + env(safe-area-inset-bottom, 0px)); background:var(--ink);}
   .sticky-baska{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.12);}
@@ -287,6 +290,8 @@ let S = {
   kgFiyati: "",
   baskaAcik: false,
   kaydetPaneliAcik: false,
+  kaydetTarih: "",   // takvimden seçilen tarih (YYYY-MM-DD)
+  kaydetMarket: "",  // alışveriş adının devamına eklenecek market/mağaza adı
   acikArsiv: null,
   acikKarsilastirma: null,
   arsivSiralamaTuru: "tarih", // "tarih" | "az"
@@ -341,7 +346,26 @@ function kacTaneOku(deger) {
 // Kayıtlı bir ürünü forma geri doldururken hangi giriş modunun kullanılacağı.
 // Kayıttaki "fiyat" tek bir paketin/koli­nin fiyatıdır; adet modunda bu "adet fiyatı" kutusuna karşılık gelir.
 const doldurmaModu = (birim) => birim === "adet" ? "birimFiyati" : "toplam";
-const bugununAdi = () => new Date().toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
+const tarihAdi = (d) => d.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
+const bugununAdi = () => tarihAdi(new Date());
+// "2026-10-11" biçimindeki takvim değerini yerel saatle Date'e çevirir (UTC kaymasını önler).
+function takvimdenTarih(deger) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(deger || "");
+  if (!m) return null;
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  return isNaN(d) ? null : d;
+}
+// Kaydet panelindeki tarih + market adından alışveriş adını oluşturur: "11 Ekim 2026 · A101"
+function kayitIsmiOlustur(tarihDegeri, market) {
+  const d = takvimdenTarih(tarihDegeri) || new Date();
+  const m = (market || "").trim();
+  return m ? `${tarihAdi(d)} · ${m}` : tarihAdi(d);
+}
+// Listedeki ürünlerin hepsinde aynı market yazıyorsa onu öner.
+function listeninMarketi() {
+  const set = new Set(S.urunler.map(u => (u.marketAdi || "").trim()).filter(Boolean));
+  return set.size === 1 ? [...set][0] : "";
+}
 
 function birimFiyatiHesapla(fiyat, miktar, birim) {
   if (!(fiyat > 0) || !(miktar > 0)) return null;
@@ -654,7 +678,27 @@ function render() {
   }
   renderDatalist();
   if (S.editingId) document.getElementById("edit-banner").style.display = "flex";
+  yukariButonuGuncelle();
 }
+
+/* ============ YUKARI ÇIK BUTONU (Geçmiş sekmesi) ============ */
+// Buton #app dışında durur; böylece her render'da yeniden oluşmaz, sadece görünürlüğü değişir.
+function yukariButonuGuncelle() {
+  let btn = document.getElementById("yukari-btn");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.id = "yukari-btn";
+    btn.className = "yukari-btn";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "En üste çık");
+    btn.textContent = "↑";
+    btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    document.body.appendChild(btn);
+  }
+  const goster = S.mod === "gecmis" && window.scrollY > 400;
+  btn.classList.toggle("gorunur", goster);
+}
+window.addEventListener("scroll", yukariButonuGuncelle, { passive: true });
 
 /* ============ HEADER ============ */
 function renderHeaderRight() {
@@ -937,8 +981,14 @@ function renderSaveCard() {
   } else {
     el.innerHTML = `
       <div class="save-panel">
-        <label>Bu alışverişe bir isim ver</label>
-        <input type="text" id="alisveris-adi" placeholder="${bugununAdi()}" value="${esc(S.alisverisAdiGecici||"")}" />
+        <label>Alışveriş tarihi</label>
+        <input type="date" id="kaydet-tarih" value="${esc(S.kaydetTarih)}" max="${yerelGunAnahtari(new Date())}" style="font-family:inherit;" />
+        <label style="margin-top:8px; display:block;">Market / mağaza adı</label>
+        <input type="text" id="kaydet-market" list="market-datalist" autocomplete="off" placeholder="opsiyonel — örn. Gimat Gross" value="${esc(S.kaydetMarket)}" />
+        <div style="margin-top:8px; padding:8px 10px; border-radius:10px; background:var(--bg);">
+          <div style="font-size:9.5px; color:var(--muted); font-weight:600;">Kaydedilecek ad</div>
+          <div id="kaydet-isim-onizleme" style="font-size:13px; font-weight:700; color:var(--ink); margin-top:2px;">${esc(kayitIsmiOlustur(S.kaydetTarih, S.kaydetMarket))}</div>
+        </div>
         <label style="margin-top:8px; display:block;">Kategori</label>
         <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">
           ${tumKategoriler().map(k => `
@@ -956,14 +1006,24 @@ function renderSaveCard() {
 
 function alisverisiKaydet() {
   if (S.urunler.length === 0) return;
-  const isimInput = document.getElementById("alisveris-adi");
-  const isim = (isimInput?.value || "").trim() || bugununAdi();
-  S.arsiv = [{ id: Date.now(), isim, tarih: new Date().toISOString(), urunler: S.urunler, kategori: S.aktifKategori || "Market" }, ...S.arsiv];
+  const market = (S.kaydetMarket || "").trim();
+  const isim = kayitIsmiOlustur(S.kaydetTarih, market);
+  // Kayıt tarihi takvimden seçilen gün olur. Bugünse şu anki saat, geçmiş bir günse öğlen 12:00 kullanılır
+  // (fiyat karşılaştırması, sıralama ve kart puanı hesapları bu tarihe göre yapılır).
+  const secilen = takvimdenTarih(S.kaydetTarih);
+  const simdi = new Date();
+  const tarih = (!secilen || yerelGunAnahtari(secilen) === yerelGunAnahtari(simdi))
+    ? simdi
+    : new Date(secilen.getFullYear(), secilen.getMonth(), secilen.getDate(), 12, 0, 0);
+  // Market adı girilmemiş ürünlere alışverişin market adını yaz (fiyat karşılaştırmasında görünsün).
+  const urunler = S.urunler.map(u => (market && !(u.marketAdi || "").trim()) ? { ...u, marketAdi: market } : u);
+  S.arsiv = [{ id: Date.now(), isim, tarih: tarih.toISOString(), urunler, kategori: S.aktifKategori || "Market" }, ...S.arsiv];
   arsivKaydet();
   S.urunler = [];
   S.aktifKategori = "Market";
   urunKaydet();
   S.kaydetPaneliAcik = false;
+  S.kaydetTarih = ""; S.kaydetMarket = "";
   formuTemizle();
   render();
 }
@@ -1669,9 +1729,13 @@ document.addEventListener("click", (e) => {
   else if (action === "kt-kaydet") { ktKaydet(); }
   else if (action === "kt-duzenle") { ktDuzenle(t.dataset.id); }
   else if (action === "kt-sil") { ktSil(t.dataset.id); }
-  else if (action === "kaydet-panel-ac") { S.kaydetPaneliAcik = true; renderSaveCard(); document.getElementById("alisveris-adi").focus(); }
+  else if (action === "kaydet-panel-ac") {
+    S.kaydetPaneliAcik = true;
+    S.kaydetTarih = yerelGunAnahtari(new Date());
+    S.kaydetMarket = listeninMarketi();
+    renderSaveCard();
+  }
   else if (action === "aktif-kategori") {
-    S.alisverisAdiGecici = document.getElementById("alisveris-adi")?.value || "";
     S.aktifKategori = t.dataset.kategori;
     renderSaveCard();
   }
@@ -1870,7 +1934,12 @@ document.addEventListener("input", (e) => {
     S.taramaSonuclari = S.taramaSonuclari.map(s => s.gid===gid ? {...s, [alan]: deger} : s);
   }
   if (e.target.id === "fis-metin") { S.fisMetniGecici = e.target.value; }
-  if (e.target.id === "alisveris-adi") { S.alisverisAdiGecici = e.target.value; }
+  if (e.target.id === "kaydet-tarih" || e.target.id === "kaydet-market") {
+    if (e.target.id === "kaydet-tarih") S.kaydetTarih = e.target.value;
+    else S.kaydetMarket = e.target.value;
+    const on = document.getElementById("kaydet-isim-onizleme");
+    if (on) on.textContent = kayitIsmiOlustur(S.kaydetTarih, S.kaydetMarket);
+  }
   if (e.target.id === "aktif-kategori-input") { S.aktifKategori = e.target.value; }
 });
 
@@ -1882,6 +1951,12 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.addEventListener("change", (e) => {
+  // Bazı iOS sürümlerinde takvim seçimi sadece "change" olayı gönderir.
+  if (e.target.id === "kaydet-tarih") {
+    S.kaydetTarih = e.target.value;
+    const on = document.getElementById("kaydet-isim-onizleme");
+    if (on) on.textContent = kayitIsmiOlustur(S.kaydetTarih, S.kaydetMarket);
+  }
   if (e.target.dataset && e.target.dataset.action === "kimicin") { urunKaydet(); }
   if (e.target.id === "yedek-dosya-input" && e.target.files && e.target.files[0]) {
     const dosya = e.target.files[0];
