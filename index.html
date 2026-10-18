@@ -149,6 +149,10 @@
   .arsiv-edit-box{border-radius:12px; padding:10px; margin:4px 0; background:rgba(255,107,74,0.05);}
   .arsiv-edit-box input, .arsiv-edit-box select{font-size:11px; padding:6px 8px; border-radius:8px; border:none; outline:none; background:#fff;}
   .arsiv-edit-row{display:flex; align-items:center; gap:6px; margin-top:6px;}
+  .arsiv-edit-grid{display:grid; grid-template-columns:1.25fr 1fr 0.8fr; gap:6px; margin-top:6px;}
+  .arsiv-edit-alan{display:flex; flex-direction:column; min-width:0;}
+  .arsiv-edit-alan label{font-size:8.5px; font-weight:700; color:var(--muted); letter-spacing:0.02em; margin:0 0 3px 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .arsiv-edit-box .arsiv-edit-alan input{width:100%; box-sizing:border-box; font-size:12px; font-weight:700; font-family:'Courier New',monospace;}
   .arsiv-edit-actions{display:flex; gap:8px; margin-top:8px;}
   .arsiv-edit-actions button{flex:1; padding:7px; border:none; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;}
   .scan-btn{margin:0 16px 12px; width:calc(100% - 32px); display:flex; align-items:center; justify-content:center; gap:6px; padding:12px; border-radius:16px; border:none; background:var(--purple); color:#fff; font-weight:700; font-size:13px; cursor:pointer;}
@@ -1380,12 +1384,22 @@ function renderArsivDraftKutusu(d) {
         <button data-action="arsiv-draft-giris-modu" data-modu="toplam" style="flex:1; padding:4px; border-radius:8px; border:none; cursor:pointer; font-size:9px; font-weight:700; background:${girisModu==="toplam"?'rgba(31,122,92,0.12)':'#fff'}; color:${girisModu==="toplam"?'var(--green)':'var(--muted)'};">Toplam fiyatı biliyorum</button>
         <button data-action="arsiv-draft-giris-modu" data-modu="birimFiyati" style="flex:1; padding:4px; border-radius:8px; border:none; cursor:pointer; font-size:9px; font-weight:700; background:${girisModu==="birimFiyati"?'rgba(31,122,92,0.12)':'#fff'}; color:${girisModu==="birimFiyati"?'var(--green)':'var(--muted)'};">${d.birim==="gram"?"Kg fiyatını biliyorum":"Adet fiyatını biliyorum"}</button>
       </div>
-      <div class="arsiv-edit-row" style="margin-top:5px;">
-        ${kgModu
-          ? `<input type="text" id="arsiv-draft-kgfiyat" value="${esc(d.kgFiyati||"")}" placeholder="kg fiyatı" inputmode="decimal" style="width:64px;" />`
-          : `<input type="text" id="arsiv-draft-fiyat" value="${esc(d.fiyat)}" placeholder="${adetToplamModu?"toplam fiyat":"fiyat"}" inputmode="decimal" style="width:64px;" />`}
-        <input type="text" id="arsiv-draft-miktar" value="${esc(d.miktar)}" placeholder="${d.birim==="gram"?"gram":"miktar"}" inputmode="decimal" style="width:56px;" />
-        <input type="text" id="arsiv-draft-kactane" value="${esc(String(d.kacTane))}" placeholder="kaç tane" inputmode="numeric" style="width:44px;" />
+      <div class="arsiv-edit-grid">
+        <div class="arsiv-edit-alan">
+          ${kgModu
+            ? `<label for="arsiv-draft-kgfiyat">KG FİYATI (₺/kg)</label>
+               <input type="text" id="arsiv-draft-kgfiyat" value="${esc(d.kgFiyati||"")}" placeholder="0,00" inputmode="decimal" />`
+            : `<label for="arsiv-draft-fiyat">${adetToplamModu ? "TOPLAM FİYAT (₺)" : d.birim==="adet" ? "ADET FİYATI (₺)" : "FİYAT (₺)"}</label>
+               <input type="text" id="arsiv-draft-fiyat" value="${esc(d.fiyat)}" placeholder="0,00" inputmode="decimal" />`}
+        </div>
+        <div class="arsiv-edit-alan">
+          <label for="arsiv-draft-miktar">${d.birim==="gram" ? "GRAMAJ (g)" : "KOLİDEKİ ADET"}</label>
+          <input type="text" id="arsiv-draft-miktar" value="${esc(d.miktar)}" placeholder="${d.birim==="gram"?"0":"1"}" inputmode="decimal" />
+        </div>
+        <div class="arsiv-edit-alan">
+          <label for="arsiv-draft-kactane">KAÇ TANE</label>
+          <input type="text" id="arsiv-draft-kactane" value="${esc(String(d.kacTane))}" placeholder="1" inputmode="numeric" />
+        </div>
       </div>
       ${(kgModu || adetToplamModu) ? `<div id="arsiv-draft-onizleme" style="font-size:9.5px; font-weight:700; color:var(--green); margin-top:3px;">Hesaplanan ${kgModu?"toplam fiyat":"adet fiyatı"}: ${hesaplananFiyat>0?`₺${paraFmt(hesaplananFiyat)}`:"—"}</div>` : ""}
       <div class="arsiv-edit-row">
