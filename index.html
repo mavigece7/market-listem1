@@ -102,6 +102,17 @@
   .save-panel .actions button{flex:1; padding:9px; border:none; border-radius:10px; font-size:11.5px; font-weight:700; cursor:pointer;}
   .btn-cancel{background:var(--bg); color:var(--muted);}
   .btn-confirm{background:var(--green); color:#fff;}
+  .onay-perde{position:fixed; inset:0; z-index:100; background:rgba(22,36,28,0.45); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity .15s;}
+  .onay-perde.acik{opacity:1;}
+  .onay-kutu{width:100%; max-width:340px; background:#fff; border-radius:18px; padding:18px 16px 14px; box-shadow:0 18px 40px rgba(22,36,28,0.25); transform:scale(0.96); transition:transform .15s;}
+  .onay-perde.acik .onay-kutu{transform:scale(1);}
+  .onay-baslik{font-size:15px; font-weight:800; color:var(--ink);}
+  .onay-mesaj{font-size:12.5px; color:var(--muted); margin-top:6px; line-height:1.45; word-break:break-word;}
+  .onay-mesaj b{color:var(--ink);}
+  .onay-butonlar{display:flex; gap:8px; margin-top:16px;}
+  .onay-butonlar button{flex:1; padding:12px; border:none; border-radius:12px; font-size:13px; font-weight:800; cursor:pointer; -webkit-tap-highlight-color:transparent;}
+  .onay-hayir{background:var(--bg); color:var(--ink);}
+  .onay-evet{background:var(--coral); color:#fff;}
   .yukari-btn{position:fixed; z-index:50; right:max(16px, calc((100vw - 420px) / 2 + 16px)); bottom:calc(24px + env(safe-area-inset-bottom, 0px)); width:46px; height:46px; border-radius:999px; border:none; background:var(--ink); color:#fff; font-size:20px; font-weight:800; line-height:1; cursor:pointer; box-shadow:0 6px 18px rgba(22,36,28,0.28); display:flex; align-items:center; justify-content:center; opacity:0; transform:translateY(12px); pointer-events:none; transition:opacity .2s, transform .2s; -webkit-tap-highlight-color:transparent;}
   .yukari-btn.gorunur{opacity:1; transform:translateY(0); pointer-events:auto;}
   .yukari-btn:active{transform:scale(0.92);}
@@ -349,7 +360,32 @@ function kacTaneOku(deger) {
 }
 // Kayıtlı bir ürünü forma geri doldururken hangi giriş modunun kullanılacağı.
 // Kayıttaki "fiyat" tek bir paketin/koli­nin fiyatıdır; adet modunda bu "adet fiyatı" kutusuna karşılık gelir.
-const doldurmaModu = (birim) => birim === "adet" ? "birimFiyati" : "toplam";
+// Ürün hangi giriş şekliyle kaydedildiyse düzenlemede de o şekilde açılır.
+// Eski kayıtlarda bu bilgi yoksa "Toplam fiyatı biliyorum" kabul edilir.
+const doldurmaModu = (u) => (u && (u.girisModu === "birimFiyati" || u.girisModu === "toplam")) ? u.girisModu : "toplam";
+// Formdaki kutuya yazılacak sayı metni (kayan nokta kırıntılarını temizler, virgülle yazar).
+function sayiMetni(n, ondalik = 4) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return "";
+  return String(parseFloat(x.toFixed(ondalik))).replace(".", ",");
+}
+// Kayıtlı ürünü forma dökerken fiyat kutularına ne yazılacağını, kaydedildiği giriş şekline göre hesaplar.
+//  - Adet + Toplam fiyat: kutuya toplam (adet fiyatı × kaç tane) yazılır
+//  - Gram + Kg fiyatı: kg fiyatı kutusuna kg fiyatı yazılır
+//  - Diğerleri: kayıttaki fiyat olduğu gibi yazılır
+function kayittanFiyatAlanlari(u, kacTane) {
+  const girisModu = doldurmaModu(u);
+  const fiyat = Number(u.fiyat) || 0;
+  const k = Number.isFinite(Number(kacTane)) ? Number(kacTane) : (Number(u.kacTane) || 1);
+  if (u.birim === "adet" && girisModu === "toplam") {
+    return { girisModu, fiyatMetni: sayiMetni(fiyat * Math.max(k, 1), 2), kgFiyatMetni: "" };
+  }
+  if (u.birim === "gram" && girisModu === "birimFiyati") {
+    const kg = Number(u.birimFiyati) || (Number(u.miktar) > 0 ? fiyat / Number(u.miktar) * 1000 : 0);
+    return { girisModu, fiyatMetni: sayiMetni(fiyat), kgFiyatMetni: sayiMetni(kg, 2) };
+  }
+  return { girisModu, fiyatMetni: sayiMetni(fiyat), kgFiyatMetni: "" };
+}
 const tarihAdi = (d) => d.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
 const bugununAdi = () => tarihAdi(new Date());
 // "2026-10-11" biçimindeki takvim değerini yerel saatle Date'e çevirir (UTC kaymasını önler).
@@ -385,7 +421,7 @@ function tumUrunKayitlari() {
       const key = (u.ad || "").trim().toLocaleLowerCase("tr");
       const mevcut = kayitlar[key];
       if (!mevcut || new Date(liste.tarih) >= new Date(mevcut.tarih)) {
-        kayitlar[key] = { ad: u.ad, birim: u.birim, fiyat: u.fiyat, miktar: u.miktar, birimFiyati: u.birimFiyati, marketAdi: u.marketAdi || "", tarih: liste.tarih };
+        kayitlar[key] = { ad: u.ad, birim: u.birim, fiyat: u.fiyat, miktar: u.miktar, birimFiyati: u.birimFiyati, girisModu: u.girisModu, marketAdi: u.marketAdi || "", tarih: liste.tarih };
       }
     });
   });
@@ -685,6 +721,45 @@ function render() {
   yukariButonuGuncelle();
 }
 
+/* ============ ONAY PENCERESİ ============ */
+// Silme gibi geri alınamayan işlemlerden önce "Evet / Vazgeç" sorar. Sonucu Promise<boolean> olarak döner.
+function onayIste({ baslik = "Emin misiniz?", mesaj = "", evet = "Evet, sil", hayir = "Vazgeç" } = {}) {
+  return new Promise((coz) => {
+    document.getElementById("onay-perde")?.remove();
+    const perde = document.createElement("div");
+    perde.id = "onay-perde";
+    perde.className = "onay-perde";
+    perde.setAttribute("role", "dialog");
+    perde.setAttribute("aria-modal", "true");
+    perde.innerHTML = `
+      <div class="onay-kutu">
+        <div class="onay-baslik">${esc(baslik)}</div>
+        ${mesaj ? `<div class="onay-mesaj">${mesaj}</div>` : ""}
+        <div class="onay-butonlar">
+          <button type="button" class="onay-hayir">${esc(hayir)}</button>
+          <button type="button" class="onay-evet">${esc(evet)}</button>
+        </div>
+      </div>`;
+    const kapat = (sonuc) => {
+      document.removeEventListener("keydown", tus, true);
+      perde.classList.remove("acik");
+      setTimeout(() => perde.remove(), 150);
+      coz(sonuc);
+    };
+    const tus = (e) => { if (e.key === "Escape") { e.preventDefault(); kapat(false); } };
+    // Tıklamalar sayfanın genel tıklama dinleyicisine ulaşmasın
+    perde.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (e.target === perde || e.target.closest(".onay-hayir")) kapat(false);
+      else if (e.target.closest(".onay-evet")) kapat(true);
+    });
+    document.addEventListener("keydown", tus, true);
+    document.body.appendChild(perde);
+    requestAnimationFrame(() => perde.classList.add("acik"));
+  });
+}
+const urunAdiGoster = (ad) => `<b>“${esc(ad && ad !== "Ürün" ? ad : "Bu ürün")}”</b>`;
+
 /* ============ YUKARI ÇIK BUTONU (Geçmiş sekmesi) ============ */
 // Buton #app dışında durur; böylece her render'da yeniden oluşmaz, sadece görünürlüğü değişir.
 function yukariButonuGuncelle() {
@@ -717,6 +792,13 @@ function renderHeaderRight() {
 }
 
 /* ============ FORM ============ */
+function formFiyatlariniDoldur(alanlar) {
+  const f = document.getElementById("fiyat-input");
+  const kg = document.getElementById("kg-fiyat-input");
+  if (f) f.value = alanlar.fiyatMetni;
+  if (kg) kg.value = alanlar.kgFiyatMetni;
+}
+
 function bindForm() {
   const adInput = document.getElementById("ad-input");
   const miktarInput = document.getElementById("miktar-input");
@@ -727,13 +809,14 @@ function bindForm() {
     const kayit = tumUrunKayitlari()[adInput.value.trim().toLocaleLowerCase("tr")];
     if (kayit && adInput.value.trim().toLocaleLowerCase("tr") === kayit.ad.toLocaleLowerCase("tr")) {
       const adDeger = adInput.value;
+      const alanlar = kayittanFiyatAlanlari(kayit, S.kacTane);
       S.birim = kayit.birim;
-      S.girisModu = doldurmaModu(kayit.birim);
-      S.kgFiyati = "";
+      S.girisModu = alanlar.girisModu;
+      S.kgFiyati = alanlar.kgFiyatMetni;
       render();
       document.getElementById("ad-input").value = adDeger;
-      document.getElementById("fiyat-input").value = String(kayit.fiyat).replace(".", ",");
-      document.getElementById("miktar-input").value = String(kayit.miktar).replace(".", ",");
+      formFiyatlariniDoldur(alanlar);
+      document.getElementById("miktar-input").value = sayiMetni(kayit.miktar);
       renderPreview();
     }
   });
@@ -851,12 +934,12 @@ function kaydetUrun() {
 
   if (S.editingId) {
     S.urunler = S.urunler.map(u => u.id === S.editingId ? {
-      ...u, ad: isim, birim: S.birim, fiyat, miktar, kacTane: S.kacTane, birimFiyati, satirToplami,
+      ...u, ad: isim, birim: S.birim, fiyat, miktar, kacTane: S.kacTane, birimFiyati, satirToplami, girisModu: S.girisModu,
       baskasiAdet: Math.min(u.baskasiAdet || 0, S.kacTane),
       marketAdi: marketAdiDeger,
     } : u);
   } else {
-    S.urunler = [{ id: Date.now(), ad: isim, birim: S.birim, fiyat, miktar, kacTane: S.kacTane, birimFiyati, satirToplami, baskasiAdet: 0, kimIcin: "", marketAdi: marketAdiDeger }, ...S.urunler];
+    S.urunler = [{ id: Date.now(), ad: isim, birim: S.birim, fiyat, miktar, kacTane: S.kacTane, birimFiyati, satirToplami, girisModu: S.girisModu, baskasiAdet: 0, kimIcin: "", marketAdi: marketAdiDeger }, ...S.urunler];
   }
   urunKaydet();
   formuTemizle();
@@ -878,13 +961,14 @@ function duzenle(id) {
   S.editingId = id;
   S.birim = u.birim;
   S.kacTane = u.kacTane;
-  S.girisModu = doldurmaModu(u.birim);
-  S.kgFiyati = "";
+  const alanlar = kayittanFiyatAlanlari(u, u.kacTane);
+  S.girisModu = alanlar.girisModu;
+  S.kgFiyati = alanlar.kgFiyatMetni;
   S.marketAdi = u.marketAdi || "";
   render();
   document.getElementById("ad-input").value = u.ad === "Ürün" ? "" : (u.ad || "");
-  document.getElementById("fiyat-input").value = String(u.fiyat).replace(".", ",");
-  document.getElementById("miktar-input").value = String(u.miktar).replace(".", ",");
+  formFiyatlariniDoldur(alanlar);
+  document.getElementById("miktar-input").value = sayiMetni(u.miktar);
   renderPreview();
   document.querySelector(".card").scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -1041,9 +1125,9 @@ function kayittanDuzenlemeyeGit(arsivId, urunId) {
   S.arsivDraft = {
     arsivId, urunId,
     ad: u.ad === "Ürün" ? "" : (u.ad || ""), birim: u.birim,
-    fiyat: String(u.fiyat).replace(".", ","), miktar: String(u.miktar).replace(".", ","),
+    ...(() => { const al = kayittanFiyatAlanlari(u, u.kacTane); return { fiyat: al.fiyatMetni, kgFiyati: al.kgFiyatMetni, girisModu: al.girisModu }; })(),
+    miktar: sayiMetni(u.miktar),
     kacTane: u.kacTane, baskasiAdet: u.baskasiAdet || 0, kimIcin: u.kimIcin || "",
-    girisModu: doldurmaModu(u.birim), kgFiyati: "",
   };
   renderGecmis();
   setTimeout(() => {
@@ -1579,6 +1663,7 @@ function taramaListeyeEkle() {
     kacTane: s.kacTane || 1,
     birimFiyati: birimFiyatiHesapla(s.fiyat, s.miktar, s.birim),
     satirToplami: s.fiyat * (s.kacTane || 1),
+    girisModu: s.birim === "adet" ? "birimFiyati" : "toplam",
     baskasiAdet: 0,
     kimIcin: "",
     marketAdi: "",
@@ -1679,11 +1764,17 @@ function ktDuzenle(id) {
 function ktSil(id) {
   if (S.kuralTipleri.length <= 1) return;
   const kullaniliyorMu = S.kartKampanyalari.some(k => k.kural === id);
-  if (kullaniliyorMu && !confirm("Bu koşul tipini kullanan kampanyalar var. Yine de silmek istiyor musun? (o kampanyalar 'Her Çekimde' yöntemine döner)")) return;
-  S.kuralTipleri = S.kuralTipleri.filter(kt => kt.id !== id);
-  kuralTipiKaydet();
-  if (S.ktDuzenleId === id) ktFormTemizle();
-  renderPuan();
+  const kt = S.kuralTipleri.find(x => x.id === id);
+  onayIste({
+    baslik: "Koşul tipini sil",
+    mesaj: `<b>${esc(kt?.ad || "Bu koşul tipi")}</b> silinecek.` + (kullaniliyorMu ? " Bu koşul tipini kullanan kampanyalar var; o kampanyalar “Her Çekimde” yöntemine döner." : "") + " Emin misiniz?",
+  }).then(ok => {
+    if (!ok) return;
+    S.kuralTipleri = S.kuralTipleri.filter(kt => kt.id !== id);
+    kuralTipiKaydet();
+    if (S.ktDuzenleId === id) ktFormTemizle();
+    renderPuan();
+  });
 }
 
 document.addEventListener("click", (e) => {
@@ -1694,7 +1785,10 @@ document.addEventListener("click", (e) => {
 
   if (action === "mod") { S.mod = t.dataset.mod; S.acikArsiv = null; render(); }
   else if (action === "siralaAZ") { S.urunler.sort((a,b)=>a.ad.localeCompare(b.ad,"tr")); urunKaydet(); render(); }
-  else if (action === "temizle") { if (confirm("Tüm liste silinsin mi?")) { S.urunler = []; formuTemizle(); urunKaydet(); render(); } }
+  else if (action === "temizle") {
+    onayIste({ baslik: "Listeyi temizle", mesaj: `Listedeki <b>${S.urunler.length} ürünün tamamı</b> silinecek. Emin misiniz?`, evet: "Evet, temizle" })
+      .then(ok => { if (ok) { S.urunler = []; formuTemizle(); urunKaydet(); render(); } });
+  }
   else if (action === "birim") {
     const adDeger = document.getElementById("ad-input").value;
     const miktarDeger = document.getElementById("miktar-input").value;
@@ -1720,7 +1814,11 @@ document.addEventListener("click", (e) => {
   else if (action === "kaydet-urun") { kaydetUrun(); }
   else if (action === "duzenle-iptal") { formuTemizle(); render(); }
   else if (action === "duzenle-satir") { duzenle(id); }
-  else if (action === "sil") { sil(id); }
+  else if (action === "sil") {
+    const u = S.urunler.find(x => x.id === id);
+    onayIste({ baslik: "Ürünü sil", mesaj: `${urunAdiGoster(u?.ad)} listeden silinecek. Bu ürünü silmek istediğinize emin misiniz?` })
+      .then(ok => { if (ok) sil(id); });
+  }
   else if (action === "yukari") { const i=S.urunler.findIndex(x=>x.id===id); if(i>0){[S.urunler[i-1],S.urunler[i]]=[S.urunler[i],S.urunler[i-1]]; urunKaydet(); render();} }
   else if (action === "asagi") { const i=S.urunler.findIndex(x=>x.id===id); if(i<S.urunler.length-1){[S.urunler[i],S.urunler[i+1]]=[S.urunler[i+1],S.urunler[i]]; urunKaydet(); render();} }
   else if (action === "baskasi-arttir") {
@@ -1736,7 +1834,11 @@ document.addEventListener("click", (e) => {
   else if (action === "kk-vazgec") { kkFormTemizle(); renderPuan(); }
   else if (action === "kk-kaydet") { kkKaydet(); }
   else if (action === "kk-duzenle") { kkDuzenle(id); }
-  else if (action === "kk-sil") { S.kartKampanyalari = S.kartKampanyalari.filter(k=>k.id!==id); kampanyaKaydet(); renderPuan(); }
+  else if (action === "kk-sil") {
+    const k = S.kartKampanyalari.find(x => x.id === id);
+    onayIste({ baslik: "Kampanyayı sil", mesaj: `<b>${esc(k ? `${k.banka} · ${k.kanal}` : "Bu kampanya")}</b> silinecek. Emin misiniz?` })
+      .then(ok => { if (ok) { S.kartKampanyalari = S.kartKampanyalari.filter(k=>k.id!==id); kampanyaKaydet(); renderPuan(); } });
+  }
   else if (action === "kt-toggle") { S.ktAcik = !S.ktAcik; renderPuan(); }
   else if (action === "kt-yontem") { S.ktYontem = t.dataset.yontem; renderPuan(); }
   else if (action === "kt-vazgec") { ktFormTemizle(); renderPuan(); }
@@ -1773,7 +1875,11 @@ document.addEventListener("click", (e) => {
   else if (action === "kayittan-duzenle") {
     kayittanDuzenlemeyeGit(Number(t.dataset.arsiv), Number(t.dataset.urun));
   }
-  else if (action === "arsiv-sil") { if(confirm("Bu alışveriş tamamen silinsin mi?")){ S.arsiv = S.arsiv.filter(a=>a.id!==id); arsivKaydet(); renderGecmis(); } }
+  else if (action === "arsiv-sil") {
+    const a = S.arsiv.find(x => x.id === id);
+    onayIste({ baslik: "Alışverişi sil", mesaj: `<b>${esc(a?.isim || "Bu alışveriş")}</b> ve içindeki ${a ? a.urunler.length : 0} ürün tamamen silinecek. Emin misiniz?` })
+      .then(ok => { if (ok) { S.arsiv = S.arsiv.filter(a=>a.id!==id); arsivKaydet(); renderGecmis(); } });
+  }
   else if (action === "arsiv-isim-duzenle") { S.arsivIsimDuzenle = id; renderGecmis(); document.getElementById(`arsiv-isim-input-${id}`)?.focus(); }
   else if (action === "arsiv-isim-kaydet") {
     const input = document.getElementById(`arsiv-isim-input-${id}`);
@@ -1795,16 +1901,23 @@ document.addEventListener("click", (e) => {
     S.arsivDraft = {
       arsivId, urunId,
       ad: u.ad==="Ürün"?"":u.ad, birim: u.birim,
-      fiyat: String(u.fiyat).replace(".",","), miktar: String(u.miktar).replace(".",","),
+      ...(() => { const al = kayittanFiyatAlanlari(u, u.kacTane); return { fiyat: al.fiyatMetni, kgFiyati: al.kgFiyatMetni, girisModu: al.girisModu }; })(),
+      miktar: sayiMetni(u.miktar),
       kacTane: u.kacTane, baskasiAdet: u.baskasiAdet||0, kimIcin: u.kimIcin||"",
-      girisModu: doldurmaModu(u.birim), kgFiyati: "",
     };
     renderGecmis();
   }
   else if (action === "arsiv-urun-sil") {
     const arsivId = Number(t.dataset.arsiv), urunId = Number(t.dataset.urun);
-    S.arsiv = S.arsiv.map(a => a.id===arsivId ? {...a, urunler: a.urunler.filter(u=>u.id!==urunId)} : a);
-    arsivKaydet(); renderGecmis();
+    const a0 = S.arsiv.find(a => a.id === arsivId);
+    const u0 = a0 && a0.urunler.find(u => u.id === urunId);
+    onayIste({ baslik: "Ürünü sil", mesaj: `${urunAdiGoster(u0?.ad)} <b>${esc(a0?.isim || "")}</b> alışverişinden silinecek. Bu ürünü silmek istediğinize emin misiniz?` })
+      .then(ok => {
+        if (!ok) return;
+        S.arsiv = S.arsiv.map(a => a.id===arsivId ? {...a, urunler: a.urunler.filter(u=>u.id!==urunId)} : a);
+        if (S.arsivDraft && S.arsivDraft.arsivId === arsivId && S.arsivDraft.urunId === urunId) S.arsivDraft = null;
+        arsivKaydet(); renderGecmis();
+      });
   }
   else if (action === "arsiv-draft-iptal") { S.arsivDraft = null; renderGecmis(); }
   else if (action === "arsiv-draft-baska-eksi") { S.arsivDraft.baskasiAdet = Math.max(0, (S.arsivDraft.baskasiAdet||0)-1); renderGecmis(); }
@@ -1849,6 +1962,7 @@ document.addEventListener("click", (e) => {
           id: Date.now(), ad: isim, birim: d.birim, fiyat: fiyatNum, miktar: miktarNum, kacTane: kacTaneNum,
           birimFiyati: birimFiyatiHesapla(fiyatNum, miktarNum, d.birim),
           satirToplami: fiyatNum * kacTaneNum,
+          girisModu: d.girisModu || "toplam",
           baskasiAdet: baskasiAdetNum,
           kimIcin: baskasiAdetNum > 0 ? (d.kimIcin||"").trim() : "",
           marketAdi: "",
@@ -1861,6 +1975,7 @@ document.addEventListener("click", (e) => {
           ...u, ad:isim, birim:d.birim, fiyat:fiyatNum, miktar:miktarNum, kacTane:kacTaneNum,
           birimFiyati: birimFiyatiHesapla(fiyatNum, miktarNum, d.birim),
           satirToplami: fiyatNum*kacTaneNum,
+          girisModu: d.girisModu || "toplam",
           baskasiAdet: baskasiAdetNum,
           kimIcin: baskasiAdetNum>0 ? (d.kimIcin||"").trim() : "",
         } : u)
