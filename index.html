@@ -2033,16 +2033,30 @@ document.addEventListener("click", (e) => {
     const blob = new Blob([veri], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `market-listem-yedek-${new Date().toISOString().slice(0,10)}.json`;
+    a.href = url; a.download = `market-listem-yedek-${yerelGunAnahtari(new Date())}.json`;
     document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
+    // Hemen iptal edilirse bazı tarayıcılarda (özellikle iPhone) indirme başlamadan kesiliyor.
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
     document.getElementById("yedek-mesaj").textContent = "Dosya indirildi.";
   }
   else if (action === "yedek-dosya-sec") { document.getElementById("yedek-dosya-input").click(); }
   else if (action === "yedek-kopyala") {
-    const metin = document.getElementById("yedek-metin").value;
-    navigator.clipboard.writeText(metin).then(()=>{ document.getElementById("yedek-mesaj").textContent = "Panoya kopyalandı."; })
-      .catch(()=>{ document.getElementById("yedek-mesaj").textContent = "Otomatik kopyalanamadı, metni elle seç ve kopyala."; });
+    const alan = document.getElementById("yedek-metin");
+    const mesaj = (m) => { const el = document.getElementById("yedek-mesaj"); if (el) el.textContent = m; };
+    // Pano API'si olmayan / izin vermeyen tarayıcılarda eski yöntemle kopyala.
+    const eskiYontem = () => {
+      try {
+        alan.removeAttribute("readonly"); alan.focus(); alan.select(); alan.setSelectionRange(0, alan.value.length);
+        const ok = document.execCommand && document.execCommand("copy");
+        alan.setAttribute("readonly", "");
+        mesaj(ok ? "Panoya kopyalandı." : "Otomatik kopyalanamadı, metni elle seç ve kopyala.");
+      } catch (e) { mesaj("Otomatik kopyalanamadı, metni elle seç ve kopyala."); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(alan.value).then(() => mesaj("Panoya kopyalandı."), eskiYontem);
+    } else {
+      eskiYontem();
+    }
   }
   else if (action === "yedek-iceaktar") { verideniceAktar(document.getElementById("iceaktar-metin").value); }
   else if (action === "tarama-dahil") { const gid=Number(t.dataset.gid); S.taramaSonuclari = S.taramaSonuclari.map(s=>s.gid===gid?{...s,dahil:!s.dahil}:s); renderScanPanel(); }
