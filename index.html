@@ -1451,11 +1451,45 @@ function hesaplaArsivDraftFiyat(d) {
   return parseFloat(String(d.fiyat).replace(",", "."));
 }
 
+// Düzenleme kutusunun altındaki hesap önizlemesi — ana formdaki ilk kayıt ekranıyla aynı satırlar.
+function arsivDraftOnizlemeHTML(d) {
+  const girisModu = d.girisModu || "toplam";
+  const kgModu = d.birim === "gram" && girisModu === "birimFiyati";
+  const adetToplamModu = d.birim === "adet" && girisModu === "toplam";
+  const fiyat = hesaplaArsivDraftFiyat(d);
+  const miktar = parseFloat(String(d.miktar ?? "").replace(",", "."));
+  const kacTane = kacTaneOku(d.kacTane);
+  const gecerli = fiyat > 0 && miktar > 0;
+  const bf = gecerli ? birimFiyatiHesapla(fiyat, miktar, d.birim) : 0;
+  const satirToplami = gecerli ? fiyat * kacTane : null;
+  const hesapSatiri = kgModu ? `
+    <div class="preview-row" style="margin-bottom:6px;">
+      <span>Hesaplanan toplam fiyat</span>
+      <span style="color:${fiyat>0?"var(--green)":"var(--muted)"}">${fiyat>0?`₺${paraFmt(fiyat)}`:"—"}</span>
+    </div>` : adetToplamModu ? `
+    <div class="preview-row" style="margin-bottom:6px;">
+      <span>Hesaplanan adet fiyatı</span>
+      <span style="color:${fiyat>0?"var(--green)":"var(--muted)"}">${fiyat>0?`₺${paraFmt(fiyat)} / adet`:"—"}</span>
+    </div>` : "";
+  return `
+    ${hesapSatiri}
+    <div class="preview" style="margin-top:0; background:#fff;">
+      <div class="preview-row">
+        <span>${d.birim==="gram"?"Kilogram fiyatı":"Birim (tane) fiyatı"}</span>
+        <span style="color:${bf?"var(--green)":"var(--muted)"}">${bf?`₺${paraFmt(bf)} / ${d.birim==="gram"?"kg":"adet"}`:"—"}</span>
+      </div>
+      ${kacTane>1 && satirToplami ? `
+      <div class="preview-sub">
+        <span>${kacTane} tane toplamı</span>
+        <span>₺${paraFmt(satirToplami)}</span>
+      </div>` : ""}
+    </div>`;
+}
+
 function renderArsivDraftKutusu(d) {
   const girisModu = d.girisModu || "toplam";
   const kgModu = d.birim === "gram" && girisModu === "birimFiyati";
   const adetToplamModu = d.birim === "adet" && girisModu === "toplam";
-  const hesaplananFiyat = hesaplaArsivDraftFiyat(d);
   return `
     <div class="arsiv-edit-box">
       <input type="text" id="arsiv-draft-ad" value="${esc(d.ad)}" placeholder="Ürün adı" style="width:100%; font-weight:700;" />
@@ -1485,7 +1519,7 @@ function renderArsivDraftKutusu(d) {
           <input type="text" id="arsiv-draft-kactane" value="${esc(String(d.kacTane))}" placeholder="1" inputmode="numeric" />
         </div>
       </div>
-      ${(kgModu || adetToplamModu) ? `<div id="arsiv-draft-onizleme" style="font-size:9.5px; font-weight:700; color:var(--green); margin-top:3px;">Hesaplanan ${kgModu?"toplam fiyat":"adet fiyatı"}: ${hesaplananFiyat>0?`₺${paraFmt(hesaplananFiyat)}`:"—"}</div>` : ""}
+      <div id="arsiv-draft-onizleme" style="margin-top:8px;">${arsivDraftOnizlemeHTML(d)}</div>
       <div class="arsiv-edit-row">
         <span style="font-size:10px; color:var(--muted); flex-shrink:0;">Başkası için:</span>
         <button data-action="arsiv-draft-baska-eksi" style="width:20px;height:20px;border-radius:999px;border:none;background:#fff;cursor:pointer;">−</button>
@@ -2045,12 +2079,7 @@ document.addEventListener("input", (e) => {
     if (e.target.id === "arsiv-draft-miktar") S.arsivDraft.miktar = e.target.value;
     if (e.target.id === "arsiv-draft-kactane") S.arsivDraft.kacTane = e.target.value;
     const onizleme = document.getElementById("arsiv-draft-onizleme");
-    if (onizleme) {
-      const girisModu = S.arsivDraft.girisModu || "toplam";
-      const kgModu = S.arsivDraft.birim === "gram" && girisModu === "birimFiyati";
-      const hesaplananFiyat = hesaplaArsivDraftFiyat(S.arsivDraft);
-      onizleme.textContent = `Hesaplanan ${kgModu?"toplam fiyat":"adet fiyatı"}: ${hesaplananFiyat>0?`₺${paraFmt(hesaplananFiyat)}`:"—"}`;
-    }
+    if (onizleme) onizleme.innerHTML = arsivDraftOnizlemeHTML(S.arsivDraft);
   }
   if (e.target.dataset && e.target.dataset.action === "kimicin") {
     const id = Number(e.target.dataset.id);
