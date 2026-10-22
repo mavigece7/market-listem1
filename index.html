@@ -678,7 +678,7 @@ function render() {
         ${S.yedekAcik?`
           <div style="margin-top:8px;">
             <p style="font-size:9.5px; color:var(--muted); margin:0 0 6px;">Listeni bir dosya olarak indir, başka bir cihazda o dosyayı seçerek geri yükle.</p>
-            <button class="save-btn" data-action="yedek-dosya-indir">⬇ Dosya Olarak İndir (.json)</button>
+            <button class="save-btn" data-action="yedek-dosya-indir">⬇ Dosya Olarak Kaydet (.json)</button>
             <div style="margin-top:8px;">
               <input type="file" id="yedek-dosya-input" accept="application/json,.json,.txt" style="display:none;" />
               <button class="save-btn" style="background:var(--coral); color:#fff; border:none;" data-action="yedek-dosya-sec">⬆ Dosyadan Geri Yükle</button>
@@ -721,6 +721,38 @@ function render() {
   yukariButonuGuncelle();
 }
 
+/* ============ YEDEĞİ DOSYA OLARAK KAYDET ============ */
+// Önce telefonun Paylaş menüsü ("Dosyalar'a Kaydet", Notlar, WhatsApp...) denenir. Ana ekrana eklenmiş
+// uygulamada iPhone normal indirmeyi çoğu zaman yapmıyor; Paylaş menüsü orada da çalışıyor.
+// Paylaş menüsü yoksa (ör. bilgisayar) normal indirme yapılır.
+async function yedekDosyaKaydet() {
+  const mesaj = (m) => { const el = document.getElementById("yedek-mesaj"); if (el) el.textContent = m; };
+  const veri = JSON.stringify({ urunler: S.urunler, urunGecmisi: S.urunGecmisi, arsiv: S.arsiv, kartKampanyalari: S.kartKampanyalari, kuralTipleri: S.kuralTipleri }, null, 2);
+  const dosyaAdi = `market-listem-yedek-${yerelGunAnahtari(new Date())}.json`;
+  try {
+    const dosya = new File([veri], dosyaAdi, { type: "application/json" });
+    if (navigator.canShare && navigator.share && navigator.canShare({ files: [dosya] })) {
+      await navigator.share({ files: [dosya], title: "Market Listem yedeği" });
+      mesaj("✓ Yedek paylaşıldı / kaydedildi.");
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === "AbortError") { mesaj("Kaydetme iptal edildi."); return; } // kullanıcı menüyü kapattı
+    // Paylaşma izni yoksa normal indirmeye geç
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([veri], { type: "application/json" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = dosyaAdi;
+    document.body.appendChild(a); a.click(); a.remove();
+    // Hemen iptal edilirse bazı tarayıcılarda (özellikle iPhone) indirme başlamadan kesiliyor.
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    mesaj("İndirme başlatıldı.");
+  } catch (e) {
+    mesaj("Dosya kaydedilemedi — 'Panoya Kopyala'yı kullan.");
+  }
+}
+
 /* ============ ONAY PENCERESİ ============ */
 // Silme gibi geri alınamayan işlemlerden önce "Evet / Vazgeç" sorar. Sonucu Promise<boolean> olarak döner.
 function onayIste({ baslik = "Emin misiniz?", mesaj = "", evet = "Evet, sil", hayir = "Vazgeç" } = {}) {
@@ -760,7 +792,7 @@ function onayIste({ baslik = "Emin misiniz?", mesaj = "", evet = "Evet, sil", ha
 }
 const urunAdiGoster = (ad) => `<b>“${esc(ad && ad !== "Ürün" ? ad : "Bu ürün")}”</b>`;
 
-/* ============ YUKARI ÇIK BUTONU (Geçmiş sekmesi) ============ */
+/* ============ YUKARI ÇIK BUTONU (Liste ve Geçmiş sekmeleri) ============ */
 // Buton #app dışında durur; böylece her render'da yeniden oluşmaz, sadece görünürlüğü değişir.
 function yukariButonuGuncelle() {
   let btn = document.getElementById("yukari-btn");
@@ -774,8 +806,12 @@ function yukariButonuGuncelle() {
     btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
     document.body.appendChild(btn);
   }
-  const goster = S.mod === "gecmis" && window.scrollY > 400;
+  const goster = (S.mod === "liste" || S.mod === "gecmis") && window.scrollY > 400;
   btn.classList.toggle("gorunur", goster);
+  // Liste sekmesinde alttaki toplam çubuğu görünüyorsa buton onun hemen üstünde dursun
+  const cubuk = document.getElementById("sticky-wrap");
+  const cubukYuksekligi = (S.mod === "liste" && cubuk) ? cubuk.offsetHeight : 0;
+  btn.style.bottom = cubukYuksekligi > 0 ? `${cubukYuksekligi + 14}px` : "";
 }
 window.addEventListener("scroll", yukariButonuGuncelle, { passive: true });
 
@@ -2028,17 +2064,7 @@ document.addEventListener("click", (e) => {
   else if (action === "fis-ayristir") { fisAyristir(); }
   else if (action === "tarama-listeye-ekle") { taramaListeyeEkle(); }
   else if (action === "yedek-toggle") { S.yedekAcik = !S.yedekAcik; render(); }
-  else if (action === "yedek-dosya-indir") {
-    const veri = JSON.stringify({ urunler: S.urunler, urunGecmisi: S.urunGecmisi, arsiv: S.arsiv, kartKampanyalari: S.kartKampanyalari, kuralTipleri: S.kuralTipleri }, null, 2);
-    const blob = new Blob([veri], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `market-listem-yedek-${yerelGunAnahtari(new Date())}.json`;
-    document.body.appendChild(a); a.click(); a.remove();
-    // Hemen iptal edilirse bazı tarayıcılarda (özellikle iPhone) indirme başlamadan kesiliyor.
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
-    document.getElementById("yedek-mesaj").textContent = "Dosya indirildi.";
-  }
+  else if (action === "yedek-dosya-indir") { yedekDosyaKaydet(); }
   else if (action === "yedek-dosya-sec") { document.getElementById("yedek-dosya-input").click(); }
   else if (action === "yedek-kopyala") {
     const alan = document.getElementById("yedek-metin");
